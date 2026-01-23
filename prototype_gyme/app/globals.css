@@ -1,0 +1,388 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Dark theme colors for gym aesthetic */
+  --background: 0 0% 0%; /* Pure black */
+  --foreground: 0 0% 100%; /* White */
+  --card: 0 0% 5%; /* Very dark gray */
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 84 100% 50%; /* Neon green #84FF00 */
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 15%; /* Dark gray */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 20%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 24 100% 50%; /* Neon orange #FF6B00 */
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 84 100% 50%;
+  --chart-1: 84 100% 50%;
+  --chart-2: 24 100% 50%;
+  --chart-3: 190 100% 50%;
+  --chart-4: 280 100% 50%;
+  --chart-5: 340 100% 50%;
+  --radius: 0.5rem;
+  --sidebar: 0 0% 5%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 84 100% 50%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 0 0% 15%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 15%;
+  --sidebar-ring: 84 100% 50%;
+
+  /* Custom neon colors */
+  --neon-green: 84 100% 50%;
+  --neon-orange: 24 100% 50%;
+  --neon-blue: 190 100% 50%;
+}
+
+@theme inline {
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-neon-green: var(--neon-green);
+  --color-neon-orange: var(--neon-orange);
+  --color-neon-blue: var(--neon-blue);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-black text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #84ff00;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Neon glow effect utilities */
+.neon-glow-green {
+  text-shadow: 0 0 10px #84ff00, 0 0 20px #84ff00, 0 0 30px #84ff00;
+}
+
+.neon-glow-orange {
+  text-shadow: 0 0 10px #ff6b00, 0 0 20px #ff6b00, 0 0 30px #ff6b00;
+}
+
+.neon-glow-blue {
+  text-shadow: 0 0 10px #00d9ff, 0 0 20px #00d9ff, 0 0 30px #00d9ff;
+}
+
+/* Enhanced animations with better performance and variety */
+@keyframes zoom {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(132, 255, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(132, 255, 0, 0.6);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.5s ease-out forwards;
+}
+
+.animate-float-up {
+  animation: floatUp 0.6s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Add page background utilities and parallax effects */
+@keyframes parallax-slow {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(30px);
+  }
+}
+
+@keyframes parallax-slower {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(50px);
+  }
+}
+
+.bg-fixed-parallax {
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+}
+
+.animate-parallax-slow {
+  animation: parallax-slow 3s ease-in-out infinite;
+}
+
+.animate-parallax-slower {
+  animation: parallax-slower 5s ease-in-out infinite;
+}
+
+/* Page background overlays */
+.page-bg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(10, 10, 10, 0.8)),
+    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(132,255,0,0.03)" stroke-width="1"/></pattern></defs><rect width="1200" height="600" fill="black"/><rect width="1200" height="600" fill="url(%23grid)"/></svg>');
+  pointer-events: none;
+}
+
+/* Particle animation for dashboard pages */
+@keyframes float-particle {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100px) translateX(50px) scale(0);
+    opacity: 0;
+  }
+}
+
+.particle {
+  position: fixed;
+  pointer-events: none;
+  animation: float-particle 4s ease-in infinite;
+}
+
+/* Add touch-friendly hover states and responsive animations */
+@media (max-width: 768px) {
+  .group:hover {
+    /* Disable hover effects on touch devices */
+  }
+
+  /* Touch-friendly button sizing */
+  .touch-target {
+    @apply min-h-12 min-w-12;
+  }
+}
+
+/* Button and interactive element animations */
+button,
+[role="button"],
+a {
+  @apply transition-all duration-300 ease-out;
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible {
+  @apply outline-offset-2 outline-2 outline-[#84FF00];
+}
+
+/* Enhanced text rendering */
+@supports (font-feature-settings: "ss01") {
+  body {
+    font-feature-settings: "ss01";
+  }
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Responsive spacing adjustments */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    @apply px-3;
+  }
+}
+
+/* Smooth transitions for interactive elements */
+.interactive-hover {
+  @apply transform transition-all duration-300 hover:scale-105 hover:shadow-lg;
+}
+
+.card-hover {
+  @apply transition-all duration-500 hover:scale-102 hover:shadow-xl;
+}
+
+/* Mobile-optimized card heights */
+@media (max-width: 768px) {
+  .card-responsive {
+    @apply min-h-64;
+  }
+}
+
+/* Button hover glow effect */
+button[class*="bg-[#84FF00]"]:hover {
+  box-shadow: 0 0 20px rgba(132, 255, 0, 0.4), inset 0 0 10px rgba(132, 255, 0, 0.1);
+}
+
+/* Link hover effects */
+a[class*="text-[#84FF00]"]:hover {
+  text-shadow: 0 0 10px rgba(132, 255, 0, 0.3);
+}
