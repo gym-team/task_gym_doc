@@ -1,78 +1,114 @@
-import { getMemberships } from "@/lib/membership"
-import { Check, Zap } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+"use client";
 
-export async function PricingPlans() {
-  const plans = await getMemberships()
+import { useEffect, useState } from "react";
+import { getMemberships, Membership } from "@/lib/membership";
+import { Check, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import "@/styles/pricing-plans.css";
+
+export function PricingPlans() {
+  const [plans, setPlans] = useState<Membership[]>([]);
+
+  // =============================
+  // LOAD DATA FROM API
+  // =============================
+  useEffect(() => {
+    async function loadPlans() {
+      try {
+        const data = await getMemberships();
+        setPlans(data);
+      } catch (err) {
+        console.error("Failed to load memberships", err);
+      }
+    }
+
+    loadPlans();
+  }, []);
+
+  // =============================
+  // SCROLL ANIMATION
+  // =============================
+  useEffect(() => {
+    if (!plans.length) return;
+
+    const cards = document.querySelectorAll(".pricing-card");
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+
+    cards.forEach(card => observer.observe(card));
+    return () => observer.disconnect();
+  }, [plans]);
+
+  if (!plans.length) return null;
 
   return (
-    <section className="py-16 bg-black">
+    <section className="py-24 bg-black">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {plans.map(plan => {
-            // Build features from description (robust)
+            const popular = plan.name === "Standard";
             const features = plan.description
               .split(",")
               .map(f => f.trim())
-              .filter(Boolean)
-
-            const popular = plan.name === "Standard"
+              .filter(Boolean);
 
             return (
               <div
                 key={plan.id}
-                className={`relative bg-white/5 border-2 ${
-                  popular ? "border-[#84FF00]" : "border-[#FF6B00]"
-                } rounded-2xl p-8 transition-all`}
+                className={`pricing-card ${popular ? "popular" : ""}`}
               >
-                {/* MOST POPULAR badge */}
+                {/* MOST POPULAR BADGE */}
                 {popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <div className="bg-[#84FF00] text-black px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                      <Zap className="h-4 w-4" />
-                      MOST POPULAR
-                    </div>
+                  <div className="popular-badge">
+                    <Zap size={14} />
+                    MOST POPULAR
                   </div>
                 )}
 
-                {/* TITLE + PRICE (NO DESCRIPTION) */}
-                <div className="text-center mb-10">
-                  <h3 className="text-2xl font-black text-white mb-4">
-                    {plan.name}
-                  </h3>
+                {/* CARD CONTENT */}
+                <div className="pricing-inner">
+                  {/* TITLE + PRICE */}
+                  <div className="text-center mb-12">
+                    <h3 className="text-2xl font-extrabold text-white mb-4">
+                      {plan.name}
+                    </h3>
 
-                  <div>
-                    <span className="text-5xl font-black text-white">
-                      ${plan.price}
-                    </span>
-                    <span className="text-gray-400"> / {plan.title}</span>
-                  </div>
-                </div>
-
-                {/* FEATURES */}
-                <div className="space-y-4 mb-10">
-                  {features.map(feature => (
-                    <div key={feature} className="flex gap-3">
-                      <Check className="h-5 w-5 text-[#84FF00]" />
-                      <span className="text-gray-300 text-sm">
-                        {feature}
-                      </span>
+                    <div>
+                      <span className="price">${plan.price}</span>
+                      <span className="period"> / {plan.title}</span>
                     </div>
-                  ))}
-                </div>
+                  </div>
 
-                {/* CTA */}
-                <Link href="/contact">
-                  <Button className="w-full font-bold bg-[#84FF00] text-black hover:bg-[#84FF00]/90">
-                    Get Started
-                  </Button>
-                </Link>
+                  {/* FEATURES */}
+                  <div className="space-y-4 mb-12">
+                    {features.map(feature => (
+                      <div key={feature} className="feature">
+                        <Check size={18} />
+                        <span>{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <Link href="/contact">
+                    <Button className="cta-btn">Get Started</Button>
+                  </Link>
+                </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </section>
-  )
+  );
 }

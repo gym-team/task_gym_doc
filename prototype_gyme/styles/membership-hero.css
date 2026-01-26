@@ -1,0 +1,189 @@
+/* ====== HERO CONTROL ====== */
+.hero-bg {
+  --blur-strength:2px;   /* 🔥 اتحكم في البلور */
+  --dark-opacity: 0.7;   /* 🔥 اتحكم في السواد */
+}
+
+.hero-overlay {
+  background: rgba(0, 0, 0, var(--dark-opacity));
+  backdrop-filter: blur(var(--blur-strength));
+}
+
+/* ====== Animations ====== */
+
+@keyframes bgSlow {
+  0% { transform: scale(1.1) translateY(0); }
+  100% { transform: scale(1.15) translateY(-20px); }
+}
+
+.animate-bgSlow {
+  animation: bgSlow 20s ease-in-out infinite alternate;
+}
+
+@keyframes floatSlow {
+  0% { transform: translate(-50%, 0); }
+  100% { transform: translate(-50%, -30px); }
+}
+
+.animate-floatSlow {
+  animation: floatSlow 8s ease-in-out infinite alternate;
+}
+
+@keyframes pulseSlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulseSlow {
+  animation: pulseSlow 6s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0% { text-shadow: 0 0 10px #84ff00; }
+  50% { text-shadow: 0 0 30px #84ff00; }
+  100% { text-shadow: 0 0 10px #84ff00; }
+}
+
+.animate-glow {
+  animation: glow 2.5s ease-in-out infinite;
+}
+
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeUp {
+  animation: fadeUp 1s ease-out forwards;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+
+
+
+.animated-border-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  color: white;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Animated Border */
+.animated-border-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    #84ff00,
+    transparent 70%
+  );
+
+  background-size: 200% 200%;
+  animation: borderMove 4s linear infinite;
+
+  /* Mask magic (very important) */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  pointer-events: none;
+}
+
+@keyframes borderMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+
+.animated-border-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 9999px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  color: white;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Animated Border */
+.animated-border-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    #84ff00,
+    transparent 70%
+  );
+
+  background-size: 200% 200%;
+  animation: borderMove 2s linear infinite;
+
+  /* Mask magic (very important) */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  pointer-events: none;
+}
+
+@keyframes borderMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+
+
+/* ===== Hero bottom spacing ===== */
+.hero-shadow {
+  margin-bottom: 120px; /* 🔥 المسافة تحت الهيرو */
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.9),
+    0 0 120px rgba(129, 249, 1, 0.462);
+}
+
+
+
+
+
+
+
+
+
+
+
