@@ -1,0 +1,234 @@
+/* ============================= */
+/*        CARD BASE              */
+/* ============================= */
+
+.pricing-card {
+  position: relative;
+  border-radius: 24px;
+
+  opacity: 0;
+  transform: translateY(60px) scale(0.96);
+
+  transition:
+    transform 0.33s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.33s ease,
+    opacity 0.8s ease;
+
+  will-change: transform;
+}
+
+/* دخول الكارد */
+.pricing-card.in-view {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ============================= */
+/*        INNER CONTENT           */
+/* ============================= */
+
+.pricing-inner {
+  position: relative;
+  height: 100%;
+  padding: 3rem 2.5rem;
+  border-radius: inherit;
+
+  background: radial-gradient(
+    120% 120% at 50% 0%,
+    rgba(255, 255, 255, 0.08),
+    rgba(0, 0, 0, 0.96)
+  );
+
+  z-index: 2;
+}
+
+/* ============================= */
+/*        LED BORDER (LAYER 1)    */
+/* ============================= */
+
+.pricing-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 3px;
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      130deg,
+      transparent 20%,
+      var(--led),
+      transparent 80%
+    );
+
+  background-size: 320% 320%;
+  animation: ledFlow 7s linear infinite;
+
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+
+  will-change: background-position;
+}
+
+/* ============================= */
+/*        LED GLOW (LAYER 2)      */
+/* ============================= */
+
+.pricing-card::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      130deg,
+      transparent 25%,
+      var(--led),
+      transparent 75%
+    );
+
+  opacity: 0.35;
+  filter: blur(14px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ============================= */
+/*        HOVER EFFECT            */
+/* ============================= */
+
+.pricing-card:hover {
+  transform: translateY(-12px) scale(1.03);
+
+  box-shadow:
+    0 0 0 1px var(--led),
+    0 0 26px color-mix(in srgb, var(--led) 45%, transparent),
+    0 0 65px color-mix(in srgb, var(--led) 22%, transparent),
+    0 45px 90px rgba(0, 0, 0, 0.85);
+}
+
+/* البوردر يبقى أوضح وقت الهوفر */
+.pricing-card:hover::before {
+  animation-duration: 2.8s;
+}
+
+.pricing-card:hover::after {
+  opacity: 0.6;
+  filter: blur(18px);
+}
+
+/* ============================= */
+/*        COLORS                  */
+/* ============================= */
+
+.pricing-card {
+  --led: #ff7a00;
+}
+
+.pricing-card.popular {
+  --led: #84ff00;
+}
+
+/* ============================= */
+/*        TEXT & FEATURES         */
+/* ============================= */
+
+.price {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.period {
+  color: #9ca3af;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d1d5db;
+  font-size: 14px;
+}
+
+.feature svg {
+  color: #84ff00;
+}
+
+/* ============================= */
+/*        BUTTON                  */
+/* ============================= */
+
+.cta-btn {
+  width: 100%;
+  background: #84ff00;
+  color: #000;
+  font-weight: 900;
+  padding: 14px;
+  border-radius: 14px;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(132, 255, 0, 0.45);
+}
+
+/* ============================= */
+/*        POPULAR BADGE           */
+/* ============================= */
+
+.popular-badge {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  background: #84ff00;
+  color: #000;
+  padding: 6px 18px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  z-index: 5;
+
+  box-shadow: 0 12px 30px rgba(132, 255, 0, 0.45);
+}
+
+/* ============================= */
+/*        LED ANIMATION           */
+/* ============================= */
+
+@keyframes ledFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 320% 50%;
+  }
+}
+
+/* ============================= */
+/*     REDUCED MOTION SUPPORT    */
+/* ============================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .pricing-card,
+  .pricing-card::before,
+  .pricing-card::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
