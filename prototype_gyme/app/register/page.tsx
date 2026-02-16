@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
-import { LoginForm } from "@/components/auth/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -16,8 +15,9 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden">
-      {/* (1) الخلفية الأصلية */}
+    <div className="relative min-h-screen overflow-hidden pt-16">
+
+      {/* (1) الخلفية */}
       <div className="fixed inset-0 -z-30">
         <img
           src="/view-gym-room-training-sports222.jpg"
@@ -25,24 +25,26 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* (2) طبقة تغميق أساسية — سواد 95% */}
+      {/* (2) طبقة تغميق أساسية */}
       <div className="fixed inset-0 -z-20 bg-black/0" />
 
-      {/* (3) منطقة فتح السواد (Spotlight من الماوس) */}
+      {/* (3) منطقة تخفيف السواد تحت الماوس */}
       <div
         className="fixed inset-0 pointer-events-none -z-10 transition-all duration-300"
         style={{
           background: `radial-gradient(
             circle 350px at ${mousePos.x}px ${mousePos.y}px,
-            rgba(0,0,0,0.25) 0%,    /* ← 30% تحت الماوس (أفتح) */
-            rgba(0,0,0,0.85) 70%    /* ← 90% برا الدائرة */
-          )`,
+            rgba(0,0,0,0.25) 0%,     /* ← المنطقة تحت الماوس */
+            rgba(0,0,0,0.85) 70%     /* ← بقية الشاشة */
+          )`
         }}
-      ></div>
+      />
 
       {/* (4) الفورم */}
-      <LoginForm />
+      <div className="relative z-10">
+        <RegisterForm />
+      </div>
+
     </div>
   );
-
 }

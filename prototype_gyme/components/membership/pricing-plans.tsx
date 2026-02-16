@@ -52,21 +52,23 @@ export function PricingPlans() {
   if (!plans.length) return null;
 
   return (
-    <section className="py-24 bg-black">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {plans.map(plan => {
-            const popular = plan.name === "Standard";
-            const features = plan.description
-              .split(",")
-              .map(f => f.trim())
-              .filter(Boolean);
+  <section className="py-24 bg-black">
+    <div className="container mx-auto px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        {plans.map(plan => {
+          const popular = plan.name === "Standard";
+          const features = plan.description
+            .split(",")
+            .map(f => f.trim())
+            .filter(Boolean);
 
-            return (
-              <div
-                key={plan.id}
-                className={`pricing-card ${popular ? "popular" : ""}`}
-              >
+          return (
+            <div
+              key={plan.id}
+              className={`pricing-card ${popular ? "popular" : ""} h-full flex`}
+            >
+              <div className="pricing-inner flex flex-col w-full p-8">
+                
                 {/* MOST POPULAR BADGE */}
                 {popular && (
                   <div className="popular-badge">
@@ -75,40 +77,44 @@ export function PricingPlans() {
                   </div>
                 )}
 
-                {/* CARD CONTENT */}
-                <div className="pricing-inner">
-                  {/* TITLE + PRICE */}
-                  <div className="text-center mb-12">
-                    <h3 className="text-2xl font-extrabold text-white mb-4">
-                      {plan.name}
-                    </h3>
+                {/* TITLE + PRICE */}
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-extrabold text-white mb-4">
+                    {plan.name}
+                  </h3>
 
-                    <div>
-                      <span className="price">${plan.price}</span>
-                      <span className="period"> / {plan.title}</span>
+                  <div>
+                    <span className="price">${plan.price}</span>
+                    <span className="period"> / {plan.title}</span>
+                  </div>
+                </div>
+
+                {/* FEATURES */}
+                <div className="space-y-4 flex-grow">
+                  {features.map(feature => (
+                    <div key={feature} className="feature flex items-center gap-2">
+                      <Check size={18} />
+                      <span>{feature}</span>
                     </div>
-                  </div>
+                  ))}
+                </div>
 
-                  {/* FEATURES */}
-                  <div className="space-y-4 mb-12">
-                    {features.map(feature => (
-                      <div key={feature} className="feature">
-                        <Check size={18} />
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* CTA */}
+                {/* CTA */}
+                <div className="mt-8">
                   <Link href="/contact">
-                    <Button className="cta-btn">Get Started</Button>
+                    <Button className="cta-btn w-full">
+                      Get Started
+                    </Button>
                   </Link>
                 </div>
+
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
-    </section>
-  );
+    </div>
+  </section>
+);
+
 }
