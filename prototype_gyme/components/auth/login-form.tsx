@@ -7,15 +7,10 @@ import { Mail, Lock, Eye, EyeOff, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Config via env:
- * .env.local
- * NEXT_PUBLIC_USE_MOCK=true
- * NEXT_PUBLIC_API_URL=https://localhost:7030
- */
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://fitzonetrack.runasp.net";
-const REDIRECT_AFTER_LOGIN = "/membership"; // غيّره لو عايز تروح لصفحة تانية بعد الدخول
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://fitzonetrack.runasp.net";
+
+const REDIRECT_AFTER_LOGIN = "/membership";
 
 export function LoginForm() {
   const { toast } = useToast();
@@ -35,11 +30,9 @@ export function LoginForm() {
     setIsVisible(true);
   }, []);
 
-  // Helper to set a field
   const setField = (key: string, value: string) =>
     setFormData((p) => ({ ...p, [key]: value }));
 
-  // Map API error shapes to field errors
   const setErrorsFromApi = (apiData: any) => {
     const newErrors: { [k: string]: string } = {};
     if (!apiData) return newErrors;
@@ -50,30 +43,18 @@ export function LoginForm() {
         newErrors[k] =
           Array.isArray(v) && v.length > 0 ? String(v[0]) : String(v);
       }
-    } else if (apiData.modelState && typeof apiData.modelState === "object") {
-      for (const k of Object.keys(apiData.modelState)) {
-        const v = apiData.modelState[k];
-        if (Array.isArray(v) && v.length > 0) newErrors[k] = String(v[0]);
-      }
-    } else if (
-      apiData.validationErrors &&
-      typeof apiData.validationErrors === "object"
-    ) {
-      for (const k of Object.keys(apiData.validationErrors)) {
-        const v = apiData.validationErrors[k];
-        if (Array.isArray(v) && v.length > 0) newErrors[k] = String(v[0]);
-      }
     } else if (apiData.message) {
       newErrors["general"] = String(apiData.message);
     } else if (typeof apiData === "string") {
       newErrors["general"] = apiData;
     }
+
     return newErrors;
   };
 
-  // Validation
   const validateForm = () => {
     const newErrors: { [k: string]: string } = {};
+
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email is invalid";
@@ -86,71 +67,28 @@ export function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Submit (mock + real)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
-    setErrors({}); // clear server errors
-
-    const payload = {
-      email: formData.email,
-      password: formData.password,
-    };
+    setErrors({});
 
     try {
-      if (USE_MOCK) {
-        // ---------- MOCK flow ----------
-        await new Promise((r) => setTimeout(r, 800));
-
-        // simulate validation from server if email contains "bad"
-        if (payload.email.includes("bad")) {
-          const mock = {
-            errors: { email: ["Email not found or already blocked"] },
-          };
-          setErrors(setErrorsFromApi(mock));
-          toast({
-            title: "Validation Error",
-            description: "Check the form fields",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // simulate success response with token
-        const mockResponse = {
-          token: "MOCK_JWT_TOKEN_12345",
-          user: { email: payload.email },
-        };
-
-        // store token depending on rememberMe
-        if (mockResponse.token) {
-          if (rememberMe) localStorage.setItem("token", mockResponse.token);
-          else sessionStorage.setItem("token", mockResponse.token);
-        }
-
-        toast({
-          title: "Login successful (mock) 🎉",
-          description: "Welcome back!",
-        });
-        setTimeout(() => router.push(REDIRECT_AFTER_LOGIN), 700);
-        setIsLoading(false);
-        return;
-      }
-
-      // ---------- REAL flow ----------
       const res = await fetch(`${API_URL}/api/Account/Login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
       });
 
       const resJson = await res.json().catch(() => null);
 
       if (!res.ok) {
         const apiErrors = setErrorsFromApi(resJson);
+
         if (Object.keys(apiErrors).length > 0) {
           setErrors(apiErrors);
           toast({
@@ -159,35 +97,35 @@ export function LoginForm() {
             variant: "destructive",
           });
         } else {
-          const msg =
-            (resJson && (resJson.message || resJson.error)) || "Login failed";
           toast({
             title: "Error",
-            description: String(msg),
+            description:
+              resJson?.message || resJson?.error || "Login failed",
             variant: "destructive",
           });
         }
-        setIsLoading(false);
         return;
       }
 
-      // success: if the API returns token -> store it
-      if (resJson && resJson.token) {
-        if (rememberMe) localStorage.setItem("token", resJson.token);
-        else sessionStorage.setItem("token", resJson.token);
+      // store token if returned
+      if (resJson?.token) {
+        if (rememberMe)
+          localStorage.setItem("token", resJson.token);
+        else
+          sessionStorage.setItem("token", resJson.token);
       }
 
       toast({
         title: "Login successful 🎉",
         description: "Welcome back to FitZone!",
       });
+
       setTimeout(() => router.push(REDIRECT_AFTER_LOGIN), 700);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error:", err);
       toast({
         title: "Network Error",
-        description:
-          "Couldn't reach the server. Enable mock mode to continue developing.",
+        description: "Couldn't reach the server.",
         variant: "destructive",
       });
     } finally {
@@ -195,7 +133,7 @@ export function LoginForm() {
     }
   };
 
-  return (
+return (
     <div className="container mx-auto px-4 py-16">
       <div
         className={`max-w-md mx-auto transition-all duration-1000 ease-out ${

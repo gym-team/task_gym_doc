@@ -7,13 +7,6 @@ import { Mail, Lock, User, Eye, EyeOff, Dumbbell, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Config: switch between mock & real using env vars
- * .env.local:
- * NEXT_PUBLIC_USE_MOCK=true
- * NEXT_PUBLIC_API_URL=https://localhost:7030
- */
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://fitzonetrack931-1.runasp.net";
 
@@ -42,34 +35,18 @@ export function RegisterForm() {
     setIsVisible(true);
   }, []);
 
-  // -------------- Helpers ----------------
   const setField = (key: string, value: string) => {
     setFormData((p) => ({ ...p, [key]: value }));
   };
 
   const setErrorsFromApi = (apiData: any) => {
-    // Try common shapes: { errors: { field: ["msg"] } } or { errors: { field: "msg" } } or { message: "..." }
     const newErrors: { [k: string]: string } = {};
     if (!apiData) return newErrors;
 
     if (apiData.errors && typeof apiData.errors === "object") {
       for (const k of Object.keys(apiData.errors)) {
         const v = apiData.errors[k];
-        if (Array.isArray(v) && v.length > 0) newErrors[k] = String(v[0]);
-        else newErrors[k] = String(v);
-      }
-    } else if (apiData.modelState && typeof apiData.modelState === "object") {
-      for (const k of Object.keys(apiData.modelState)) {
-        const v = apiData.modelState[k];
-        if (Array.isArray(v) && v.length > 0) newErrors[k] = String(v[0]);
-      }
-    } else if (
-      apiData.validationErrors &&
-      typeof apiData.validationErrors === "object"
-    ) {
-      for (const k of Object.keys(apiData.validationErrors)) {
-        const v = apiData.validationErrors[k];
-        if (Array.isArray(v)) newErrors[k] = String(v[0]);
+        newErrors[k] = Array.isArray(v) ? String(v[0]) : String(v);
       }
     } else if (apiData.message) {
       newErrors["general"] = String(apiData.message);
@@ -78,7 +55,6 @@ export function RegisterForm() {
     return newErrors;
   };
 
-  // -------------- Image -> Base64 (data URL) ----------------
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -87,9 +63,9 @@ export function RegisterForm() {
     reader.readAsDataURL(file);
   };
 
-  // -------------- Validation ----------------
   const validateForm = () => {
     const newErrors: { [k: string]: string } = {};
+
     if (!formData.firstName) newErrors.firstName = "First name is required";
     if (!formData.lastName) newErrors.lastName = "Last name is required";
 
@@ -115,52 +91,14 @@ export function RegisterForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // -------------- Submit (supports mock & real) ----------------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
     setIsLoading(true);
-    setErrors({}); // clear backend errors
-
-    const payload = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
-      photo: profileImage || "", // optional: backend should accept empty string or null
-    };
+    setErrors({});
 
     try {
-      if (USE_MOCK) {
-        // ---------- MOCK FLOW ----------
-        await new Promise((r) => setTimeout(r, 900)); // simulate latency
-
-        // Example: simulate an API validation error if email contains "bad"
-        if (payload.email.includes("bad")) {
-          const mockApi = { errors: { email: ["This email is already used"] } };
-          const mapped = setErrorsFromApi(mockApi);
-          setErrors(mapped);
-          toast({
-            title: "Validation Error",
-            description: "Check the form fields",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-
-        // success
-        toast({
-          title: "Account Created (mock) 🎉",
-          description: "Welcome to FitZone!",
-        });
-        setTimeout(() => router.push("/"), 900);
-        setIsLoading(false);
-        return;
-      }
-
-      // ---------- REAL FLOW ----------
       const form = new FormData();
       form.append("FirstName", formData.firstName);
       form.append("LastName", formData.lastName);
@@ -177,11 +115,11 @@ export function RegisterForm() {
         body: form,
       });
 
-      // try parse JSON safely
       const resJson = await res.json().catch(() => null);
 
       if (!res.ok) {
         const apiErrors = setErrorsFromApi(resJson);
+
         if (Object.keys(apiErrors).length > 0) {
           setErrors(apiErrors);
           toast({
@@ -190,29 +128,28 @@ export function RegisterForm() {
             variant: "destructive",
           });
         } else {
-          const msg =
-            (resJson && (resJson.message || resJson.error)) ||
-            "Registration failed";
           toast({
             title: "Error",
-            description: String(msg),
+            description:
+              resJson?.message || resJson?.error || "Registration failed",
             variant: "destructive",
           });
         }
-        setIsLoading(false);
+
         return;
       }
 
-      // success
-      toast({ title: "Account Created ", description: "Welcome to FitZone!" });
+      toast({
+        title: "Account Created 🎉",
+        description: "Welcome to FitZone!",
+      });
+
       setTimeout(() => router.push("/"), 900);
-    } catch (err: any) {
-      // network or unexpected error
+    } catch (err) {
       console.error("Register error:", err);
       toast({
         title: "Network Error",
-        description:
-          "Couldn't reach the server. If you want, enable mock mode to continue developing.",
+        description: "Couldn't reach the server.",
         variant: "destructive",
       });
     } finally {
@@ -220,8 +157,7 @@ export function RegisterForm() {
     }
   };
 
-  // -------------- UI (keeps your original styling) ----------------
-  return (
+return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div
         className={`max-w-sm sm:max-w-md lg:max-w-lg mx-auto transition-all duration-1000 ease-out ${
