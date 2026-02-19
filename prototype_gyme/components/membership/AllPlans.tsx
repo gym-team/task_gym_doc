@@ -12,6 +12,7 @@ interface Plan {
   price: number;
   title: string;
 }
+
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://fitzonetrack931-1.runasp.net";
 
@@ -20,9 +21,13 @@ export function AllPlans() {
 
   useEffect(() => {
     async function loadPlans() {
-       const res = await fetch( `${API_URL}/api/Membership/Plans`);
-      const data = await res.json();
-      setPlans(data);
+      try {
+        const res = await fetch(`${API_URL}/api/Membership/Plans`);
+        const data = await res.json();
+        setPlans(data);
+      } catch (error) {
+        console.error("Error loading plans:", error);
+      }
     }
 
     loadPlans();
@@ -34,8 +39,8 @@ export function AllPlans() {
     const cards = document.querySelectorAll(".pricing-card");
 
     const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("in-view");
           }
@@ -44,7 +49,7 @@ export function AllPlans() {
       { threshold: 0.3 }
     );
 
-    cards.forEach(card => observer.observe(card));
+    cards.forEach((card) => observer.observe(card));
     return () => observer.disconnect();
   }, [plans]);
 
@@ -52,14 +57,20 @@ export function AllPlans() {
     <section className="py-24 bg-black">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-12 max-w-7xl mx-auto">
-          {plans.map(plan => {
+          {plans.map((plan) => {
+            const typeClass =
+              plan.name.toLowerCase() === "premium"
+                ? "premium"
+                : "standard";
+
             const popular =
-              plan.name === "Premium" && plan.title === "1 Year";
+              plan.name === "Premium" &&
+              plan.title === "1 Year";
 
             return (
               <div
                 key={plan.id}
-                className={`pricing-card ${
+                className={`pricing-card ${typeClass} ${
                   popular ? "popular" : ""
                 }`}
               >
@@ -77,8 +88,12 @@ export function AllPlans() {
                     </h3>
 
                     <div>
-                      <span className="price">${plan.price}</span>
-                      <span className="period"> / {plan.title}</span>
+                      <span className="price">
+                        ${plan.price}
+                      </span>
+                      <span className="period">
+                        {" "} / {plan.title}
+                      </span>
                     </div>
                   </div>
 
@@ -95,7 +110,7 @@ export function AllPlans() {
 
                   <div className="mt-8">
                     <Link href="/contact">
-                      <Button className="cta-btn">
+                      <Button className="cta-btn w-full">
                         Get Started
                       </Button>
                     </Link>
@@ -110,3 +125,5 @@ export function AllPlans() {
     </section>
   );
 }
+
+export default AllPlans;

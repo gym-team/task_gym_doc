@@ -277,3 +277,17 @@
     0 0 60px rgba(132, 255, 0, 0.3);
   transform: translateY(-3px);
 }
+
+/* ============================= */
+/*        PLAN TYPES              */
+/* ============================= */
+
+/* Standard → Green */
+.pricing-card.standard {
+  --led: #84ff00;
+}
+
+/* Premium → Orange/Brown */
+.pricing-card.premium {
+  --led: #ff7a00;
+}
