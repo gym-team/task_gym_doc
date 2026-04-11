@@ -5,12 +5,19 @@ prototype_gyme
 │  ├─ globals.css
 │  ├─ icon.png
 │  ├─ layout.tsx
-│  └─ page.tsx
+│  ├─ membership
+│  │  └─ page.tsx
+│  ├─ page.tsx
+│  └─ register
+│     └─ page.tsx
 ├─ components
+│  ├─ auth
+│  │  ├─ login-form.tsx
+│  │  └─ register-form.tsx
 │  ├─ footer.tsx
 │  ├─ membership
-│  │  ├─ membership-benefits.tsxnpm run dev
-
+│  │  ├─ AllPlans.tsx
+│  │  ├─ membership-benefits.tsx
 │  │  ├─ membership-faq.tsx
 │  │  ├─ membership-hero.tsx
 │  │  └─ pricing-plans.tsx
@@ -85,13 +92,14 @@ prototype_gyme
 ├─ next.config.mjs
 ├─ package-lock.json
 ├─ package.json
-├─ pnpm-lock.yaml
 ├─ postcss.config.mjs
 ├─ public
 │  ├─ 3d-gym-equipment.jpg
 │  ├─ placeholder-logo.svg
 │  ├─ placeholder.svg
-│  └─ view-gym-room-training-sports.jpg
+│  ├─ view-gym-room-training-sports.jpg
+│  └─ view-gym-room-training-sports222.jpg
+├─ README.md
 ├─ styles
 │  ├─ globals.css
 │  ├─ membership-benefits.css
