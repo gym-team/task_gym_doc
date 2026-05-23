@@ -1,0 +1,143 @@
+ @keyframes phZoom {
+          from { transform: scale(1.05); }
+          to   { transform: scale(1.12); }
+        }
+        @keyframes phGridDrift {
+          from { background-position: 0 0; }
+          to   { background-position: 50px 50px; }
+        }
+        @keyframes phFloatTL {
+          from { transform: translate(0, 0); opacity: 0.8; }
+          to   { transform: translate(28px, 28px); opacity: 1; }
+        }
+        @keyframes phFloatBR {
+          from { transform: translate(0, 0); }
+          to   { transform: translate(-22px, -22px); }
+        }
+        @keyframes phScan {
+          0%   { top: -2px; opacity: 0; }
+          5%   { opacity: 1; }
+          95%  { opacity: 0.5; }
+          100% { top: 100%; opacity: 0; }
+        }
+        @keyframes phBlink {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.2; }
+        }
+        @keyframes phFadeDown {
+          from { opacity: 0; transform: translateY(-14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes phFadeUp {
+          from { opacity: 0; transform: translateY(22px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes phAccentGlow {
+          from { text-shadow: 0 0 20px rgba(132,255,0,0.35); }
+          to   { text-shadow: 0 0 55px rgba(132,255,0,0.9), 0 0 100px rgba(132,255,0,0.35); }
+        }
+        @keyframes phShimmer {
+          from { transform: translateX(-100%); }
+          to   { transform: translateX(100%); }
+        }
+
+        .ph-bg-img {
+          position: absolute; inset: 0;
+          background: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
+          animation: phZoom 20s ease-in-out infinite alternate;
+        }
+        .ph-grid {
+          position: absolute; inset: 0;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+          background-size: 50px 50px;
+          animation: phGridDrift 35s linear infinite;
+        }
+        .ph-glow-tl {
+          position: absolute; top: -120px; left: -120px;
+          width: 350px; height: 350px;
+          background: radial-gradient(circle, rgba(132,255,0,0.22) 0%, transparent 70%);
+          border-radius: 50%;
+          animation: phFloatTL 10s ease-in-out infinite alternate;
+        }
+        .ph-glow-br {
+          position: absolute; bottom: -150px; right: -120px;
+          width: 350px; height: 350px;
+          background: radial-gradient(circle, rgba(132,255,0,0.12) 0%, transparent 70%);
+          border-radius: 50%;
+          animation: phFloatBR 13s ease-in-out infinite alternate;
+        }
+        .ph-scan {
+          position: absolute; left: 0; right: 0; height: 2px;
+          background: linear-gradient(90deg, transparent, rgba(132,255,0,0.45), transparent);
+          animation: phScan 6s ease-in-out infinite;
+          pointer-events: none;
+        }
+        .ph-eyebrow {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: rgba(132,255,0,0.08);
+          border: 1px solid rgba(132,255,0,0.22);
+          border-radius: 9999px;
+          padding: 5px 16px;
+          margin-bottom: 1.4rem;
+          animation: phFadeDown 0.6s ease both;
+        }
+        .ph-eyebrow-dot {
+          width: 6px; height: 6px;
+          background: #84FF00; border-radius: 50%;
+          animation: phBlink 1.6s ease-in-out infinite;
+        }
+        .ph-h1 {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(3.6rem, 9vw, 5.5rem);
+          line-height: 0.95; letter-spacing: 0.02em;
+          color: #fff; margin: 0 0 1.2rem;
+          animation: phFadeUp 0.7s 0.15s ease both;
+        }
+        .ph-accent {
+          color: #84FF00; display: inline-block;
+          animation: phAccentGlow 3s ease-in-out infinite alternate;
+        }
+        .ph-sub {
+          font-size: 1rem; color: rgba(255,255,255,0.68);
+          line-height: 1.7; margin: 0 0 2.2rem;
+          animation: phFadeUp 0.7s 0.3s ease both;
+        }
+        .ph-stats {
+          display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+          margin-bottom: 2rem;
+          animation: phFadeUp 0.7s 0.45s ease both;
+        }
+        .ph-stat {
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 9999px; padding: 7px 16px;
+          transition: border-color 0.2s, background 0.2s;
+        }
+        .ph-stat:hover {
+          border-color: rgba(132,255,0,0.4);
+          background: rgba(132,255,0,0.06);
+        }
+        .ph-stat-num {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 1.15rem; color: #84FF00; letter-spacing: 0.04em;
+        }
+        .ph-stat-label { font-size: 0.78rem; color: rgba(255,255,255,0.55); }
+        .ph-pill {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,0.04);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(132,255,0,0.25);
+          border-radius: 9999px; padding: 10px 22px;
+          position: relative; overflow: hidden;
+          animation: phFadeUp 0.7s 0.6s ease both;
+        }
+        .ph-pill::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(132,255,0,0.1), transparent);
+          transform: translateX(-100%);
+          animation: phShimmer 3.5s ease-in-out infinite 2s;
+        }

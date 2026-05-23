@@ -1,189 +1,569 @@
-/* ====== HERO CONTROL ====== */
-.hero-bg {
-  --blur-strength:2px;   /* 🔥 اتحكم في البلور */
-  --dark-opacity: 0.7;   /* 🔥 اتحكم في السواد */
-}
+/* =========================
+   MEMBERSHIP HERO
+========================= */
 
-.hero-overlay {
-  background: rgba(0, 0, 0, var(--dark-opacity));
-  backdrop-filter: blur(var(--blur-strength));
-}
-
-/* ====== Animations ====== */
-
-@keyframes bgSlow {
-  0% { transform: scale(1.1) translateY(0); }
-  100% { transform: scale(1.15) translateY(-20px); }
-}
-
-.animate-bgSlow {
-  animation: bgSlow 20s ease-in-out infinite alternate;
-}
-
-@keyframes floatSlow {
-  0% { transform: translate(-50%, 0); }
-  100% { transform: translate(-50%, -30px); }
-}
-
-.animate-floatSlow {
-  animation: floatSlow 8s ease-in-out infinite alternate;
-}
-
-@keyframes pulseSlow {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-}
-
-.animate-pulseSlow {
-  animation: pulseSlow 6s ease-in-out infinite;
-}
-
-@keyframes glow {
-  0% { text-shadow: 0 0 10px #84ff00; }
-  50% { text-shadow: 0 0 30px #84ff00; }
-  100% { text-shadow: 0 0 10px #84ff00; }
-}
-
-.animate-glow {
-  animation: glow 2.5s ease-in-out infinite;
-}
-
-@keyframes fadeUp {
-  0% { opacity: 0; transform: translateY(30px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fadeUp {
-  animation: fadeUp 1s ease-out forwards;
-}
-
-.delay-200 {
-  animation-delay: 0.2s;
-}
-
-
-
-
-.animated-border-pill {
+.membership-hero {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px);
-  color: white;
-  z-index: 0;
+  min-height: 100vh;
   overflow: hidden;
+  background: #050505;
 }
 
-/* Animated Border */
-.animated-border-pill::before {
-  content: "";
+.mh-content-wrapper {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.mh-content {
+  text-align: center;
+  max-width: 48rem;
+  padding-inline: 1rem;
+}
+
+/* =========================
+   BACKGROUNDS
+========================= */
+
+.mh-bg-img {
   position: absolute;
   inset: 0;
-  padding: 1.5px;
-  border-radius: inherit;
 
-  background: linear-gradient(
-    120deg,
-    transparent 30%,
-    #84ff00,
-    transparent 70%
-  );
+  background:
+    url("https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=2070&auto=format&fit=crop")
+    center/cover no-repeat;
 
-  background-size: 200% 200%;
-  animation: borderMove 4s linear infinite;
+  animation: slowZoom 18s ease-in-out infinite alternate;
+}
 
-  /* Mask magic (very important) */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+.mh-overlay-dark {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+}
+
+.mh-overlay-gradient {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(132,255,0,0.18) 0%,
+      rgba(0,0,0,0.55) 50%,
+      #050505 100%
+    );
+}
+
+.mh-grid {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+
+  background-size: 60px 60px;
+
+  animation: gridDrift 40s linear infinite;
+}
+
+/* =========================
+   GLOW EFFECTS
+========================= */
+
+.mh-glow-center {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 500px;
+  height: 500px;
+
+  background:
+    radial-gradient(circle,
+    rgba(132,255,0,0.18) 0%,
+    transparent 70%);
+
+  border-radius: 50%;
+
+  animation: pulseGlow 4s ease-in-out infinite alternate;
 
   pointer-events: none;
 }
 
-@keyframes borderMove {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 200% 50%;
-  }
-}
-
-
-.animated-border-pill {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 28px;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(10px);
-  color: white;
-  z-index: 0;
-  overflow: hidden;
-}
-
-/* Animated Border */
-.animated-border-pill::before {
-  content: "";
+.mh-glow-tl {
   position: absolute;
-  inset: 0;
-  padding: 1.5px;
-  border-radius: inherit;
+  top: -120px;
+  left: -120px;
 
-  background: linear-gradient(
-    120deg,
-    transparent 30%,
-    #84ff00,
-    transparent 70%
-  );
+  width: 320px;
+  height: 320px;
 
-  background-size: 200% 200%;
-  animation: borderMove 2s linear infinite;
+  border-radius: 50%;
 
-  /* Mask magic (very important) */
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  background:
+    radial-gradient(circle,
+    rgba(132,255,0,0.14) 0%,
+    transparent 70%);
+
+  animation: floatTL 9s ease-in-out infinite alternate;
+}
+
+.mh-glow-br {
+  position: absolute;
+  bottom: -160px;
+  right: -120px;
+
+  width: 380px;
+  height: 380px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(circle,
+    rgba(132,255,0,0.10) 0%,
+    transparent 70%);
+
+  animation: floatBR 11s ease-in-out infinite alternate;
+}
+
+/* =========================
+   PARTICLES
+========================= */
+
+.particle {
+  position: absolute;
+
+  width: 3px;
+  height: 3px;
+
+  background: #84ff00;
+
+  border-radius: 50%;
+
+  opacity: 0;
+
+  animation: riseParticle linear infinite;
+}
+
+/* =========================
+   SCANLINE
+========================= */
+
+.mh-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  height: 2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(132,255,0,0.5),
+      transparent
+    );
+
+  animation: scan 5s ease-in-out infinite;
 
   pointer-events: none;
 }
 
-@keyframes borderMove {
+/* =========================
+   EYEBROW
+========================= */
+
+.mh-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 4px 14px;
+
+  margin-bottom: 1.4rem;
+
+  border-radius: 9999px;
+
+  background: rgba(132,255,0,0.1);
+
+  border: 1px solid rgba(132,255,0,0.25);
+
+  animation: fadeSlideDown 0.7s ease both;
+}
+
+.mh-eyebrow-dot {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+
+  background: #84ff00;
+
+  animation: blink 1.4s ease-in-out infinite;
+}
+
+.mh-eyebrow-text {
+  font-size: 11px;
+  font-weight: 600;
+
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  color: #84ff00;
+}
+
+/* =========================
+   HEADING
+========================= */
+
+.mh-h1 {
+  font-family: "Bebas Neue", sans-serif;
+
+  font-size: clamp(3.8rem, 9vw, 6rem);
+
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+
+  color: white;
+
+  margin-bottom: 1.2rem;
+
+  animation: fadeSlideUp 0.75s 0.15s ease both;
+}
+
+.mh-accent {
+  color: #84ff00;
+
+  display: inline-block;
+
+  animation: glowPulseText 3s ease-in-out infinite alternate;
+}
+
+.mh-sub {
+  font-size: 1.05rem;
+  line-height: 1.65;
+
+  color: rgba(255,255,255,0.72);
+
+  margin-bottom: 2rem;
+
+  animation: fadeSlideUp 0.75s 0.3s ease both;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.mh-cta-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  margin-bottom: 1.6rem;
+
+  animation: fadeSlideUp 0.75s 0.38s ease both;
+}
+
+.mh-btn-primary {
+  position: relative;
+
+  overflow: hidden;
+  cursor: pointer;
+
+  padding: 12px 28px;
+
+  border: none;
+  border-radius: 9999px;
+
+  background: #84ff00;
+  color: #050505;
+
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+
+  transition:
+    transform 0.18s,
+    box-shadow 0.18s;
+
+  box-shadow: 0 0 28px rgba(132,255,0,0.55);
+}
+
+.mh-btn-primary:hover {
+  transform: scale(1.04) translateY(-2px);
+
+  box-shadow: 0 0 50px rgba(132,255,0,0.75);
+}
+
+.mh-btn-primary::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.35) 50%,
+      transparent 100%
+    );
+
+  animation: btnShine 3.5s ease-in-out infinite 2s;
+}
+
+.mh-btn-ghost {
+  cursor: pointer;
+
+  padding: 12px 28px;
+
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.2);
+
+  background: transparent;
+
+  color: rgba(255,255,255,0.8);
+
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    transform 0.18s;
+}
+
+.mh-btn-ghost:hover {
+  border-color: rgba(132,255,0,0.5);
+
+  color: #84ff00;
+
+  transform: scale(1.03) translateY(-2px);
+}
+
+/* =========================
+   PILL
+========================= */
+
+.mh-pill {
+  position: relative;
+
+  overflow: hidden;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 22px;
+
+  border-radius: 9999px;
+
+  backdrop-filter: blur(12px);
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(132,255,0,0.28);
+
+  animation: fadeSlideUp 0.75s 0.45s ease both;
+}
+
+.mh-pill::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(132,255,0,0.12),
+      transparent
+    );
+
+  transform: translateX(-100%);
+
+  animation: shimmer 3s ease-in-out infinite 1.5s;
+}
+
+.mh-pill-check {
+  color: #84ff00;
+  font-weight: 700;
+}
+
+.mh-pill-text {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.82rem;
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes slowZoom {
+  from {
+    transform: scale(1.08);
+  }
+
+  to {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes gridDrift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 60px 60px;
+  }
+}
+
+@keyframes pulseGlow {
+  from {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes floatTL {
+  from {
+    transform: translate(0, 0);
+  }
+
+  to {
+    transform: translate(30px, 30px);
+  }
+}
+
+@keyframes floatBR {
+  from {
+    transform: translate(0, 0);
+  }
+
+  to {
+    transform: translate(-25px, -25px);
+  }
+}
+
+@keyframes riseParticle {
   0% {
-    background-position: 0% 50%;
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
   }
+
+  10% {
+    opacity: 0.8;
+  }
+
+  80% {
+    opacity: 0.4;
+  }
+
   100% {
-    background-position: 200% 50%;
+    opacity: 0;
+    transform: translateY(-200px) scale(1.5);
   }
 }
 
+@keyframes scan {
+  0% {
+    top: -2px;
+    opacity: 0;
+  }
 
+  5% {
+    opacity: 1;
+  }
 
-/* ===== Hero bottom spacing ===== */
-.hero-shadow {
-  margin-bottom: 120px; /* 🔥 المسافة تحت الهيرو */
-  box-shadow:
-    0 40px 80px rgba(0, 0, 0, 0.9),
-    0 0 120px rgba(129, 249, 1, 0.462);
+  95% {
+    opacity: 0.6;
+  }
+
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
 }
 
+@keyframes fadeSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
 
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
 
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
+@keyframes glowPulseText {
+  from {
+    text-shadow: 0 0 20px rgba(132,255,0,0.4);
+  }
 
+  to {
+    text-shadow:
+      0 0 50px rgba(132,255,0,0.9),
+      0 0 100px rgba(132,255,0,0.4);
+  }
+}
 
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
 
+  50% {
+    opacity: 0.25;
+  }
+}
 
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
 
+  to {
+    transform: translateX(100%);
+  }
+}
 
+@keyframes btnShine {
+  from {
+    transform: translateX(-100%) skewX(-20deg);
+  }
+
+  to {
+    transform: translateX(200%) skewX(-20deg);
+  }
+}

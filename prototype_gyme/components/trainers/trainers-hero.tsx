@@ -1,19 +1,62 @@
+
+import "@/styles/trainers-hero.css";
 export function TrainersHero() {
   return (
-    <section className="relative py-24 overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-[#0A0A0A] to-black" />
+    <section className="trainers-hero">
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-6">
-            MEET OUR <span className="text-[#84FF00]">EXPERT</span> TRAINERS
+      {/* Background */}
+      <div className="th-bg-img" />
+
+      {/* Overlays */}
+      <div className="th-overlay-dark" />
+      <div className="th-overlay-gradient" />
+
+      {/* Grid */}
+      <div className="th-grid" />
+
+      {/* Glow Effects */}
+      <div className="th-glow-center" />
+      <div className="th-glow-tl" />
+      <div className="th-glow-br" />
+
+      {/* Scan Line */}
+      <div className="th-scanline" />
+
+      {/* Noise Texture */}
+      <div className="th-noise" />
+
+      {/* Content */}
+      <div className="th-content-wrapper">
+        <div className="th-content">
+
+          {/* Eyebrow */}
+          <div className="th-eyebrow">
+            <div className="th-eyebrow-dot" />
+
+            <span className="th-eyebrow-text">
+              Professional Fitness Coaches
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="th-title">
+            MEET OUR
+            <br />
+
+            <span className="th-accent">
+              EXPERT TRAINERS
+            </span>
           </h1>
-          <p className="text-xl text-gray-400 leading-relaxed">
-            Our certified professionals are dedicated to helping you achieve your fitness goals. Each trainer brings
-            unique expertise and passion to guide your transformation journey.
+
+          {/* Description */}
+          <p className="th-subtitle">
+            Our certified professionals are dedicated to helping you
+            achieve your fitness goals. Each trainer brings unique
+            expertise and passion to guide your transformation journey.
           </p>
+
         </div>
       </div>
     </section>
-  )
+  );
 }

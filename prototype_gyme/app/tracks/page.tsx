@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
-import { ProgramsHero } from "@/components/programs/programs-hero";
-import ProgramCategories from "@/components/programs/program-categories"
-
+import { ProgramsHero } from "@/components/tracks/tracks-hero";
+import ProgramCategories from "@/components/tracks/track-categories";
 
 export default function ProgramsPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -14,6 +13,7 @@ export default function ProgramsPage() {
     const move = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
+
     window.addEventListener("mousemove", move);
     return () => window.removeEventListener("mousemove", move);
   }, []);
@@ -21,19 +21,19 @@ export default function ProgramsPage() {
   return (
     <div className="relative w-full min-h-screen overflow-hidden">
 
-      {/* (1) صورة الخلفية */}
-      <div className="fixed inset-0 -z-30">
+      {/* Background Image */}
+      {/* <div className="fixed inset-0 -z-30">
         <img
           src="/view-gym-room-training-sports.jpg"
           className="w-full h-full object-cover"
           alt="background"
         />
-      </div>
+      </div> */}
 
-      {/* (2) طبقة تغميق ثابتة */}
+      {/* Dark Overlay */}
       <div className="fixed inset-0 -z-20 bg-black/0" />
 
-      {/* (3) دائرة الفتح حول الماوس */}
+      {/* Mouse Spotlight */}
       <div
         className="fixed inset-0 pointer-events-none -z-10 transition-all duration-300"
         style={{
@@ -43,14 +43,16 @@ export default function ProgramsPage() {
             rgba(0,0,0,0.75) 70%
           )`,
         }}
-      ></div>
+      />
 
-      {/* (4) محتوى الصفحة */}
       <Navigation />
 
       <main className="pt-16 relative z-10">
         <ProgramsHero />
-        <ProgramCategories />
+
+      
+            <ProgramCategories />
+          
       </main>
 
       <Footer />

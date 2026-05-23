@@ -1,7 +1,7 @@
-import { Navigation } from "@/components/navigation"
-import { Footer } from "@/components/footer"
-import { TrainersGrid } from "@/components/trainers/trainers-grid"
-import { TrainersHero } from "@/components/trainers/trainers-hero"
+import { Navigation } from "@/components/navigation";
+import { Footer } from "@/components/footer";
+import { TrainersGrid } from "@/components/trainers/trainers-grid";
+import { TrainersHero } from "@/components/trainers/trainers-hero";
 
 export default function TrainersPage() {
   return (
@@ -9,9 +9,10 @@ export default function TrainersPage() {
       <Navigation />
       <main className="pt-16">
         <TrainersHero />
+
         <TrainersGrid />
       </main>
       <Footer />
     </div>
-  )
+  );
 }

@@ -1,40 +1,113 @@
+"use client";
 
-import "@/styles/membership-hero.css"
+import { useEffect, useRef } from "react";
+// app/layout.tsx
+
+import "@/styles/membership-hero.css";
+
 export function MembershipHero() {
+  const particlesRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = particlesRef.current;
+    if (!container) return;
+
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement("div");
+
+      p.className = "particle";
+
+      const size = 2 + Math.random() * 3;
+      const dur = 4 + Math.random() * 7;
+      const delay = Math.random() * 8;
+
+      Object.assign(p.style, {
+        left: Math.random() * 100 + "%",
+        bottom: Math.random() * 30 + "%",
+        width: size + "px",
+        height: size + "px",
+        animationDuration: dur + "s",
+        animationDelay: delay + "s",
+      });
+
+      container.appendChild(p);
+    }
+  }, []);
+
   return (
-    <section
-      className="relative min-h-screen overflow-hidden hero-bg hero-shadow"
-    >
+    <section className="membership-hero">
       {/* Background Image */}
-      <div className="absolute inset-0 bg-[url('/3d-gym-equipment.jpg')] bg-cover bg-center scale-110 animate-bgSlow" />
+      <div className="mh-bg-img" />
 
-      {/* Dark + Blur Layer (Controllable) */}
-      <div className="absolute inset-0 hero-overlay" />
+      {/* Overlays */}
+      <div className="mh-overlay-dark" />
+      <div className="mh-overlay-gradient" />
 
-      {/* Soft LED Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#84FF00]/20 blur-3xl rounded-full animate-floatSlow" />
-      <div className="absolute bottom-20 -left-32 w-[400px] h-[400px] bg-[#84FF00]/10 blur-3xl rounded-full animate-pulseSlow" />
+      {/* Grid */}
+      <div className="mh-grid" />
+
+      {/* Glow Effects */}
+      <div className="mh-glow-center" />
+      <div className="mh-glow-tl" />
+      <div className="mh-glow-br" />
+
+      {/* Particles */}
+      <div
+        ref={particlesRef}
+        className="absolute inset-0 pointer-events-none"
+      />
+
+      {/* Scan Line */}
+      <div className="mh-scanline" />
 
       {/* Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen">
-        <div className="text-center max-w-3xl px-4">
-          <h1 className="text-5xl md:text-7xl font-black text-white mb-6 animate-glow">
-            CHOOSE YOUR{" "}
-            <span className="text-[#84FF00]">PLAN</span>
+      <div className="mh-content-wrapper">
+        <div className="mh-content">
+
+          {/* Eyebrow */}
+          <div className="mh-eyebrow">
+            <div className="mh-eyebrow-dot" />
+
+            <span className="mh-eyebrow-text">
+              Membership Plans
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="mh-h1">
+            CHOOSE YOUR
+            <br />
+            <span className="mh-accent">PLAN</span>
           </h1>
 
-          <p className="text-xl text-gray-300 mb-8 animate-fadeUp">
-            Flexible membership options designed to fit your lifestyle and fitness goals.
+          {/* Subheading */}
+          <p className="mh-sub">
+            Flexible membership options designed to fit your
+            lifestyle and fitness goals.
           </p>
 
-          <div className="inline-flex items-center  animated-border-pill gap-2 bg-white/5 backdrop-blur-md border border-[#84FF00]/30 rounded-full px-6 py-3 shadow-[0_0_25px_rgba(132,255,0,0.3)] animate-fadeUp delay-200">
-            <span className="text-[#84FF00] font-bold">✓</span>
-            <span className="text-white text-sm">
+          {/* Buttons */}
+          <div className="mh-cta-row">
+            <button className="mh-btn-primary">
+              GET STARTED TODAY
+            </button>
+
+            <button className="mh-btn-ghost">
+              COMPARE PLANS
+            </button>
+          </div>
+
+          {/* Pill */}
+          <div className="mh-pill">
+            <span className="mh-pill-check">✓</span>
+
+            <span className="mh-pill-text">
               No commitment • Cancel anytime • 7-day money-back guarantee
             </span>
           </div>
+
         </div>
       </div>
     </section>
-  )
+  );
 }

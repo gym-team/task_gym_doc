@@ -1,6 +1,6 @@
 import type React from "react"
 import { Montserrat, Poppins } from "next/font/google"
-import "./globals.css"
+import "./globals.css";
 
 
 const montserrat = Montserrat({

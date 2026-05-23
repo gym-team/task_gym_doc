@@ -84,22 +84,54 @@ export default function ContactPage() {
 
       <main className="pt-16">
         {/* ================== HERO ================== */}
-        <section className="relative py-32 overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/portrait-person-entrapped-by-cybersickness-using-smart-device-too-long.jpg')" }}
-          />
-          <div className="absolute inset-0 bg-black/625" />
+        {/* ================== HERO ================== */}
+        <section className="relative py-32 overflow-hidden isolate">
+          {/* Background Image */}
+      {/* Background Image */}
+<div
+  className="absolute inset-0 bg-cover bg-center scale-105"
+  style={{
+    backgroundImage:
+      "url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop')",
+  }}
+/>
 
+          {/* Dark Overlay */}
+          <div className="absolute inset-0 bg-black/75" />
+
+          {/* Green Gradient Glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(132,255,0,0.18),transparent_45%)]" />
+
+          {/* Bottom Fade */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black" />
+
+          {/* Animated Blur Circles */}
+          <div className="absolute top-[-120px] left-[-120px] w-[350px] h-[350px] bg-[#84FF00]/10 rounded-full blur-3xl" />
+
+          <div className="absolute bottom-[-140px] right-[-100px] w-[320px] h-[320px] bg-[#84FF00]/10 rounded-full blur-3xl" />
+
+          {/* Grid Effect */}
+          <div
+            className="absolute inset-0 opacity-[0.06]"
+            style={{
+              backgroundImage: `
+        linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)
+      `,
+              backgroundSize: "60px 60px",
+            }}
+          />
+
+          {/* Content */}
           <div className="relative z-10 container mx-auto px-4 text-center">
             <motion.h1
               variants={fadeDown}
               initial="hidden"
               animate="visible"
-              className="text-5xl md:text-7xl font-black text-white mb-6"
+              className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight"
               style={{
                 textShadow:
-                  "0 0 25px rgba(132,255,0,0.6), 0 0 60px rgba(132,255,0,0.4)",
+                  "0 0 25px rgba(132,255,0,0.6), 0 0 60px rgba(132,255,0,0.35)",
               }}
             >
               GET IN <span className="text-[#84FF00]">TOUCH</span>
@@ -109,7 +141,7 @@ export default function ContactPage() {
               variants={fadeUp}
               initial="hidden"
               animate="visible"
-              className="text-xl text-gray-300 max-w-3xl mx-auto"
+              className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
             >
               Have questions? Want to schedule a tour? We're here to help you
               start your fitness journey.
@@ -140,9 +172,7 @@ export default function ContactPage() {
                     <div className="bg-[#84FF00]/10 p-3 rounded-lg">
                       <MapPin className="h-6 w-6 text-[#84FF00]" />
                     </div>
-                    <p className="text-gray-400">
-                      GYM Location – Cairo, Egypt
-                    </p>
+                    <p className="text-gray-400">GYM Location – Cairo, Egypt</p>
                   </motion.div>
 
                   <motion.div variants={fadeLeft} className="flex gap-4">
@@ -163,9 +193,7 @@ export default function ContactPage() {
                     <div className="bg-[#84FF00]/10 p-3 rounded-lg">
                       <Clock className="h-6 w-6 text-[#84FF00]" />
                     </div>
-                    <p className="text-gray-400">
-                      Daily: 6:00 AM – 12:00 AM
-                    </p>
+                    <p className="text-gray-400">Daily: 6:00 AM – 12:00 AM</p>
                   </motion.div>
                 </div>
 

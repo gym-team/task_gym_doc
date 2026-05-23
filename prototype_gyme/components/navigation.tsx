@@ -23,9 +23,8 @@ export function Navigation() {
     { href: "/", label: "Home" },
     { href: "/trainers", label: "Trainers" },
     { href: "/membership", label: "Membership" },
-    { href: "/programs", label: "Programs" },
-    { href: "/shop", label: "Shop" },
-    { href: "/blog", label: "Blog" },
+    { href: "/tracks", label: "Tracks" },
+  
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ]
@@ -89,7 +88,7 @@ export function Navigation() {
           </div>
 
           {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-0">
             <div className="relative group">
               <Button
                 variant="ghost"
