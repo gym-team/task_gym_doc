@@ -1,16 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMemberships, Membership } from "@/lib/membership";
+import {
+  getMemberships,
+  getMyMembership,
+  Membership,
+  MembershipStatus,
+} from "@/lib/membership";
 import { Check, Zap } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { CardSkeleton } from "@/components/ui/card-skeleton";
-import Link from "next/link";
+import { PaymentModal } from "@/components/membership/payment-modal";
 
-export function PricingPlans() {
+type Props = {
+  // اختياري: تستخدمه الصفحة الأم لو عايزة تعرف فورًا لما الاشتراك يتفعل
+  onMembershipUpdate?: (membership: MembershipStatus) => void;
+};
+
+export function PricingPlans({ onMembershipUpdate }: Props = {}) {
   const [plans, setPlans] = useState<Membership[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+
+  // الباقة المختارة حاليًا عشان نفتح بيها المودال
+  const [selectedPlan, setSelectedPlan] = useState<Membership | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // الاشتراك الحالي للمستخدم (لو موجود)
+  const [currentMembership, setCurrentMembership] =
+    useState<MembershipStatus | null>(null);
 
   // =============================
   // FIX HYDRATION
@@ -27,8 +44,13 @@ export function PricingPlans() {
 
     const loadData = async () => {
       try {
-        const data = await getMemberships();
-        setPlans(data);
+        const [plansData, membershipData] = await Promise.all([
+          getMemberships(),
+          getMyMembership(),
+        ]);
+
+        setPlans(plansData);
+        setCurrentMembership(membershipData);
       } catch (err) {
         console.error("Failed to load memberships", err);
       } finally {
@@ -48,20 +70,30 @@ export function PricingPlans() {
     const cards = document.querySelectorAll(".pricing-card");
 
     const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add("in-view");
           }
         });
       },
-      { threshold: 0.35 }
+      { threshold: 0.35 },
     );
 
-    cards.forEach(card => observer.observe(card));
+    cards.forEach((card) => observer.observe(card));
 
     return () => observer.disconnect();
   }, [plans]);
+
+  function handleSubscribeClick(plan: Membership) {
+    setSelectedPlan(plan);
+    setModalOpen(true);
+  }
+
+  function handlePaymentSuccess(membership: MembershipStatus) {
+    setCurrentMembership(membership);
+    onMembershipUpdate?.(membership);
+  }
 
   // =============================
   // PREVENT HYDRATION ERROR
@@ -78,7 +110,7 @@ export function PricingPlans() {
       <section className="py-24">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {[1, 2].map(i => (
+            {[1, 2].map((i) => (
               <CardSkeleton key={i} />
             ))}
           </div>
@@ -99,13 +131,19 @@ export function PricingPlans() {
     <section className="py-24">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {plans.map(plan => {
+          {plans.map((plan) => {
             const popular = plan.name === "Standard";
 
-            const features = plan.description
-              ?.split(",")
-              .map(f => f.trim())
-              .filter(Boolean) || [];
+            // الباقة دي هي نفس الباقة الفعالة عند المستخدم دلوقتي؟
+            const isCurrentActivePlan =
+              currentMembership?.isActive &&
+              currentMembership.membershipPlanId === plan.id;
+
+            const features =
+              plan.description
+                ?.split(",")
+                .map((f) => f.trim())
+                .filter(Boolean) || [];
 
             return (
               <div
@@ -115,11 +153,17 @@ export function PricingPlans() {
                 } h-full flex`}
               >
                 <div className="pricing-inner flex flex-col w-full p-8">
-
-                  {popular && (
+                  {popular && !isCurrentActivePlan && (
                     <div className="popular-badge">
                       <Zap size={14} />
                       MOST POPULAR
+                    </div>
+                  )}
+
+                  {isCurrentActivePlan && (
+                    <div className="popular-badge !bg-green-500 !text-black">
+                      <Check size={14} />
+                      YOUR CURRENT PLAN
                     </div>
                   )}
 
@@ -135,7 +179,7 @@ export function PricingPlans() {
                   </div>
 
                   <div className="space-y-4 flex-grow">
-                    {features.map(feature => (
+                    {features.map((feature) => (
                       <div
                         key={feature}
                         className="feature flex items-center gap-2"
@@ -147,19 +191,31 @@ export function PricingPlans() {
                   </div>
 
                   <div className="mt-8">
-                    <Link href="/contact">
-                      <Button className="cta-btn w-full">
-                        Get Started
-                      </Button>
-                    </Link>
+                    <button
+                      onClick={() => handleSubscribeClick(plan)}
+                      disabled={isCurrentActivePlan}
+                      className={`cta-btn w-full h-12 rounded-xl font-bold transition flex items-center justify-center gap-2 ${
+                        isCurrentActivePlan
+                          ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                          : "bg-[#84FF00] text-black hover:scale-[1.02]"
+                      }`}
+                    >
+                      {isCurrentActivePlan ? "Active" : "Subscribe"}
+                    </button>
                   </div>
-
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      <PaymentModal
+        open={modalOpen}
+        plan={selectedPlan}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handlePaymentSuccess}
+      />
     </section>
   );
 }

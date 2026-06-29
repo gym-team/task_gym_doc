@@ -1,241 +1,469 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useEffect } from "react"
-import { Menu, X, Dumbbell, User, Calendar, Briefcase, MessageSquare, Zap, BarChart3 } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  Menu,
+  X,
+  Dumbbell,
+  User,
+  Calendar,
+  Briefcase,
+  MessageSquare,
+  Zap,
+  BarChart3,
+  LogOut,
+  ChefHat,
+  Apple,
+  ClipboardList,
+  HeartPulse,
+  LineChart,
+  Users,
+  ShieldCheck,
+  LayoutDashboard,
+  BookOpen,
+  PackageSearch,
+  Settings2,
+  BadgeCheck,
+  Home,
+  UtensilsCrossed,
+  PlayCircle,
+} from "lucide-react"
+
 import { Button } from "@/components/ui/button"
-import { usePathname } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+
+type CurrentUser = {
+  userId?: string
+  email?: string
+  fullName?: string
+  role?: string
+  traineeId?: number | null
+  coachId?: number | null
+  isTrainee?: boolean
+  isCoach?: boolean
+  isAdmin?: boolean
+}
+
+type NavItem = {
+  href: string
+  label: string
+  icon?: React.ComponentType<{ className?: string }>
+}
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? ""
+
+function getStoredToken() {
+  if (typeof window === "undefined") return null
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("accessToken") ||
+    localStorage.getItem("jwt") ||
+    localStorage.getItem("authToken")
+  )
+}
+
+function clearStoredToken() {
+  if (typeof window === "undefined") return
+  localStorage.removeItem("token")
+  localStorage.removeItem("accessToken")
+  localStorage.removeItem("jwt")
+  localStorage.removeItem("authToken")
+}
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [user, setUser] = useState<CurrentUser | null>(null)
+  const [loadingUser, setLoadingUser] = useState(true)
   const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
     }
+
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/trainers", label: "Trainers" },
-    { href: "/membership", label: "Membership" },
-    { href: "/tracks", label: "Tracks" },
-  
+  useEffect(() => {
+    let alive = true
+
+    async function loadCurrentUser() {
+      try {
+        const token = getStoredToken()
+
+        if (!token) {
+          if (alive) setUser(null)
+          return
+        }
+
+        const response = await fetch(`${API_BASE}/api/Account/me`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        })
+
+        if (!response.ok) {
+          if (alive) setUser(null)
+          return
+        }
+
+        const data = (await response.json()) as CurrentUser
+        if (alive) setUser(data)
+      } catch {
+        if (alive) setUser(null)
+      } finally {
+        if (alive) setLoadingUser(false)
+      }
+    }
+
+    loadCurrentUser()
+
+    return () => {
+      alive = false
+    }
+  }, [])
+
+  const normalizedRole = useMemo(() => {
+    const role = (user?.role ?? "").toLowerCase()
+    if (user?.isAdmin || role.includes("admin")) return "admin"
+    if (user?.isCoach || role.includes("coach")) return "coach"
+    if (user?.isTrainee || role.includes("trainee")) return "trainee"
+    return "guest"
+  }, [user])
+
+  const isLoggedIn = normalizedRole !== "guest"
+
+  const publicLinks: NavItem[] = [
+    { href: "/", label: "Home", icon: Home },
+    { href: "/tracks", label: "Tracks", icon: PlayCircle },
+    { href: "/program", label: "Programs", icon: BookOpen },
+    { href: "/nutrition", label: "Nutrition", icon: UtensilsCrossed },
+    { href: "/trainers", label: "Trainers", icon: Users },
+    { href: "/membership", label: "Membership", icon: BadgeCheck },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ]
 
-  const actionLinks = [
-    { href: "/book-trainer", label: "Book Trainer", icon: Calendar },
-    { href: "/apply-trainer", label: "Apply as Trainer", icon: Briefcase },
+  const traineeLinks: NavItem[] = [
+    { href: "/nutrition/enrollments", label: "My Nutrition", icon: HeartPulse },
+    { href: "/payment", label: "Payment", icon: BadgeCheck },
   ]
 
-  const userLinks = [
+  const coachLinks: NavItem[] = [
+    { href: "/coach", label: "Coach Dashboard", icon: LayoutDashboard },
+    { href: "/coach/queue", label: "Review Queue", icon: ClipboardList },
+    { href: "/coach/plans", label: "Plan Builder", icon: ChefHat },
+    { href: "/coach/foods", label: "Food Library", icon: Apple },
+    { href: "/coach/constraints", label: "Constraints", icon: Settings2 },
+  ]
+
+  const adminLinks: NavItem[] = [
+    { href: "/admin", label: "Admin Dashboard", icon: ShieldCheck },
+    { href: "/admin/exercise", label: "Exercises", icon: ShieldCheck },
+
+
+  ]
+
+  const accountLinks: NavItem[] = [
     { href: "/profile", label: "My Profile", icon: User },
     { href: "/ai-assistant", label: "AI Assistant", icon: Zap },
-    { href: "/chat/1", label: "Trainer Chat", icon: MessageSquare },
-    { href: "/trainer/dashboard", label: "Trainer Dashboard", icon: BarChart3 },
   ]
+
+  const roleLinks = useMemo(() => {
+    if (normalizedRole === "coach") return coachLinks
+    if (normalizedRole === "trainee") return traineeLinks
+    if (normalizedRole === "admin") return adminLinks
+    return []
+  }, [normalizedRole])
+
+  const roleLabel = useMemo(() => {
+    if (normalizedRole === "admin") return "Admin"
+    if (normalizedRole === "coach") return "Coach"
+    if (normalizedRole === "trainee") return "Trainee"
+    return "Guest"
+  }, [normalizedRole])
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/"
     return pathname.startsWith(href)
   }
 
+  const handleLogout = () => {
+    clearStoredToken()
+    setUser(null)
+    router.push("/login")
+    router.refresh()
+    setIsOpen(false)
+  }
+
+  const LinkItem = ({
+    item,
+    mobile = false,
+    onClick,
+  }: {
+    item: NavItem
+    mobile?: boolean
+    onClick?: () => void
+  }) => {
+    const Icon = item.icon
+    const active = isActive(item.href)
+
+    if (mobile) {
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={onClick}
+          className={`flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300 ${
+            active ? "bg-white/5 text-[#84FF00]" : "text-gray-400 hover:bg-white/5 hover:text-white"
+          }`}
+        >
+          {Icon ? <Icon className="h-4 w-4" /> : null}
+          {item.label}
+        </Link>
+      )
+    }
+
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className="relative px-3 py-2 text-sm font-medium transition-all duration-300 group"
+      >
+        <span
+          className={`relative z-10 transition-colors duration-300 ${
+            active ? "text-[#84FF00]" : "text-gray-400 group-hover:text-white"
+          }`}
+        >
+          {item.label}
+        </span>
+        {active && (
+          <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-[#84FF00] shadow-[0_0_10px_rgba(132,255,0,0.8)]" />
+        )}
+        <span className="absolute inset-0 rounded-lg bg-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      </Link>
+    )
+  }
+
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/98 backdrop-blur-md shadow-lg shadow-[#84FF00]/5" : "bg-black/95 backdrop-blur-sm"
-      } border-b border-white/10`}
+      className={`fixed left-0 right-0 top-0 z-50 border-b border-white/10 transition-all duration-300 ${
+        scrolled ? "bg-black/98 shadow-lg shadow-[#84FF00]/5 backdrop-blur-md" : "bg-black/95 backdrop-blur-sm"
+      }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <Dumbbell className="h-8 w-8 text-[#84FF00] group-hover:text-[#FF6B00] transition-colors duration-300 group-hover:rotate-12" />
+        <div className="flex h-16 items-center justify-between">
+          <Link href="/" className="group flex items-center gap-2">
+            <Dumbbell className="h-8 w-8 text-[#84FF00] transition-colors duration-300 group-hover:rotate-12 group-hover:text-[#FF6B00]" />
             <span className="text-2xl font-black tracking-tight text-white">
-              FIT<span className="text-[#84FF00] group-hover:text-[#FF6B00] transition-colors duration-300">ZONE</span>
+              FIT
+              <span className="text-[#84FF00] transition-colors duration-300 group-hover:text-[#FF6B00]">
+                ZONE
+              </span>
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="relative px-4 py-2 text-sm font-medium transition-all duration-300 group"
-              >
-                <span
-                  className={`relative z-10 transition-colors duration-300 ${
-                    isActive(link.href) ? "text-[#84FF00]" : "text-gray-400 group-hover:text-white"
-                  }`}
-                >
-                  {link.label}
-                </span>
-                {/* Active indicator with glow */}
-                {isActive(link.href) && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#84FF00] rounded-full shadow-[0_0_10px_rgba(132,255,0,0.8)]" />
-                )}
-                {/* Hover effect */}
-                <span className="absolute inset-0 bg-white/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </Link>
+            {publicLinks.map((item) => (
+              <LinkItem key={item.href} item={item} />
             ))}
           </div>
 
-          {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-0">
-            <div className="relative group">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-[#84FF00] hover:bg-white/5 font-medium transition-all duration-300"
-              >
-                Dashboard
-              </Button>
-              <div className="absolute top-full right-0 mt-2 w-56 bg-black/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2">
-                {userLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-[#84FF00] hover:bg-white/5 transition-all duration-300 first:rounded-t-xl last:rounded-b-xl group/item"
-                  >
-                    <link.icon className="h-4 w-4 group-hover/item:scale-110 transition-transform duration-300" />
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
+          <div className="hidden lg:flex items-center gap-2">
+            {isLoggedIn && (
+              <Badge className="border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white">
+                {roleLabel}
+              </Badge>
+            )}
 
-            <div className="relative group">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-[#84FF00] hover:bg-white/5 font-medium transition-all duration-300"
-              >
-                Quick Actions
-              </Button>
-              <div className="absolute top-full right-0 mt-2 w-56 bg-black/95 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 -translate-y-2">
-                {actionLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center gap-3 px-4 py-3 text-sm text-gray-400 hover:text-[#84FF00] hover:bg-white/5 transition-all duration-300 first:rounded-t-xl last:rounded-b-xl group/item"
-                  >
-                    <link.icon className="h-4 w-4 group-hover/item:scale-110 transition-transform duration-300" />
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <Link href="/login">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-[#84FF00] hover:bg-white/5 transition-all duration-300"
-              >
-                <User className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-            </Link>
-            <Link href="/membership">
-              <Button
-                size="sm"
-                className="bg-[#84FF00] text-black hover:bg-[#84FF00]/90 font-bold hover:shadow-[0_0_20px_rgba(132,255,0,0.5)] transition-all duration-300 hover:scale-105"
-              >
-                Join Now
-              </Button>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 text-white hover:text-[#84FF00] transition-colors duration-300"
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <div className="py-4 border-t border-white/10">
-            <div className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
-                    isActive(link.href)
-                      ? "text-[#84FF00] bg-white/5"
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
-                  }`}
-                  onClick={() => setIsOpen(false)}
+            {roleLinks.length > 0 && (
+              <div className="relative group">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-white transition-all duration-300 hover:bg-white/5 hover:text-[#84FF00]"
                 >
-                  {link.label}
-                </Link>
-              ))}
+                  {normalizedRole === "coach" && <ChefHat className="mr-2 h-4 w-4" />}
+                  {normalizedRole === "trainee" && <HeartPulse className="mr-2 h-4 w-4" />}
+                  {normalizedRole === "admin" && <ShieldCheck className="mr-2 h-4 w-4" />}
+                  Dashboard
+                </Button>
 
-              <div className="border-t border-white/10 pt-4 mt-2 space-y-2">
-                <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Dashboard</p>
-                {userLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-400 hover:text-[#84FF00] hover:bg-white/5 rounded-lg transition-all duration-300"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <link.icon className="h-4 w-4" />
-                    {link.label}
-                  </Link>
-                ))}
+                <div className="invisible absolute right-0 top-full mt-2 w-64 translate-y-[-8px] rounded-xl border border-white/10 bg-black/95 opacity-0 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                  <div className="p-2">
+                    {roleLinks.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-gray-400 transition-all duration-300 hover:bg-white/5 hover:text-[#84FF00]"
+                      >
+                        {item.icon ? <item.icon className="h-4 w-4" /> : null}
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
+            )}
 
-              <div className="border-t border-white/10 pt-4 mt-2 space-y-2">
-                <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wide">Quick Actions</p>
-                {actionLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-400 hover:text-[#84FF00] hover:bg-white/5 rounded-lg transition-all duration-300"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <link.icon className="h-4 w-4" />
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-
-              <div className="flex flex-col gap-2 pt-4 border-t border-white/10 mt-2">
-                <Link href="/login" onClick={() => setIsOpen(false)}>
+            {isLoggedIn ? (
+              <>
+                <div className="relative group">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="w-full text-white hover:text-[#84FF00] justify-start hover:bg-white/5 transition-all duration-300"
+                    className="text-white transition-all duration-300 hover:bg-white/5 hover:text-[#84FF00]"
                   >
-                    <User className="h-4 w-4 mr-2" />
-                    Login
+                    <User className="mr-2 h-4 w-4" />
+                    Account
                   </Button>
-                </Link>
-                <Link href="/membership" onClick={() => setIsOpen(false)}>
+
+                  <div className="invisible absolute right-0 top-full mt-2 w-56 translate-y-[-8px] rounded-xl border border-white/10 bg-black/95 opacity-0 shadow-2xl backdrop-blur-md transition-all duration-300 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+                    <div className="p-2">
+                      {accountLinks.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-gray-400 transition-all duration-300 hover:bg-white/5 hover:text-[#84FF00]"
+                        >
+                          {item.icon ? <item.icon className="h-4 w-4" /> : null}
+                          {item.label}
+                        </Link>
+                      ))}
+
+                      <button
+                        onClick={handleLogout}
+                        className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-gray-400 transition-all duration-300 hover:bg-white/5 hover:text-red-400"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {!loadingUser && (
+                  <Link href="/login">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white transition-all duration-300 hover:bg-white/5 hover:text-[#84FF00]"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Login
+                    </Button>
+                  </Link>
+                )}
+                <Link href="/membership">
                   <Button
                     size="sm"
-                    className="w-full bg-[#84FF00] text-black hover:bg-[#84FF00]/90 font-bold hover:shadow-[0_0_20px_rgba(132,255,0,0.5)] transition-all duration-300"
+                    className="bg-[#84FF00] font-bold text-black transition-all duration-300 hover:scale-105 hover:bg-[#84FF00]/90 hover:shadow-[0_0_20px_rgba(132,255,0,0.5)]"
                   >
                     Join Now
                   </Button>
                 </Link>
+              </>
+            )}
+          </div>
+
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-2 text-white transition-colors duration-300 hover:text-[#84FF00] lg:hidden"
+            aria-label="Toggle menu"
+          >
+            
+            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+
+
+        <div
+          className={`overflow-hidden transition-all duration-300 lg:hidden ${
+            isOpen ? "max-h-[900px] opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <div className="border-t border-white/10 py-4">
+            <div className="flex flex-col gap-2">
+              <div className="px-4 pb-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Explore</p>
               </div>
+
+              {publicLinks.map((item) => (
+                <LinkItem key={item.href} item={item} mobile onClick={() => setIsOpen(false)} />
+              ))}
+
+              {isLoggedIn && roleLinks.length > 0 && (
+                <div className="mt-3 border-t border-white/10 pt-4">
+                  <div className="px-4 pb-2 flex items-center justify-between">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {roleLabel} Area
+                    </p>
+                    <Badge className="border border-white/10 bg-white/5 text-[10px] text-white">
+                      {roleLabel}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    {roleLinks.map((item) => (
+                      <LinkItem key={item.href} item={item} mobile onClick={() => setIsOpen(false)} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {isLoggedIn ? (
+                <div className="mt-3 border-t border-white/10 pt-4">
+                  <div className="px-4 pb-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Account</p>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    {accountLinks.map((item) => (
+                      <LinkItem key={item.href} item={item} mobile onClick={() => setIsOpen(false)} />
+                    ))}
+
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium text-gray-400 transition-all duration-300 hover:bg-white/5 hover:text-red-400"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-3 border-t border-white/10 pt-4">
+                  <div className="flex flex-col gap-2">
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start text-white transition-all duration-300 hover:bg-white/5 hover:text-[#84FF00]"
+                      >
+                        <User className="mr-2 h-4 w-4" />
+                        Login
+                      </Button>
+                    </Link>
+                    <Link href="/membership" onClick={() => setIsOpen(false)}>
+                      <Button
+                        size="sm"
+                        className="w-full bg-[#84FF00] font-bold text-black transition-all duration-300 hover:bg-[#84FF00]/90 hover:shadow-[0_0_20px_rgba(132,255,0,0.5)]"
+                      >
+                        Join Now
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -2,25 +2,41 @@
 
 import { useEffect, useState } from "react";
 import { Check } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import "@/styles/pricing-plans.css";
+import {
+  getMyMembership,
+  Membership as MembershipType,
+  MembershipStatus,
+} from "@/lib/membership";
+import { PaymentModal } from "@/components/membership/payment-modal";
 
 interface Plan {
   id: number;
   name: string;
   price: number;
   title: string;
+  description?: string;
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "http://fitzonetrack931-1.runasp.net";
+type Props = {
+  onMembershipUpdate?: (membership: MembershipStatus) => void;
+};
 
-export function AllPlans() {
+// نفس البيز يورل المستخدم في باقي الموقع
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+
+export function AllPlans({ onMembershipUpdate }: Props = {}) {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const [selectedPlan, setSelectedPlan] = useState<MembershipType | null>(
+    null,
+  );
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const [currentMembership, setCurrentMembership] =
+    useState<MembershipStatus | null>(null);
 
   // =========================
   // FIX HYDRATION
@@ -37,12 +53,22 @@ export function AllPlans() {
 
     async function loadPlans() {
       try {
-        const res = await fetch(
-          `${API_URL}/api/Membership/Plans`,
-          {
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("token") ||
+              localStorage.getItem("accessToken")
+            : null;
+
+        const [res, membershipData] = await Promise.all([
+          fetch(`${API_URL}/api/Membership/Plans`, {
             cache: "no-store",
-          }
-        );
+            headers: {
+              "Content-Type": "application/json",
+              ...(token && { Authorization: `Bearer ${token}` }),
+            },
+          }),
+          getMyMembership(),
+        ]);
 
         if (!res.ok) {
           throw new Error("Failed to fetch plans");
@@ -51,6 +77,7 @@ export function AllPlans() {
         const data = await res.json();
 
         setPlans(Array.isArray(data) ? data : []);
+        setCurrentMembership(membershipData);
       } catch (error) {
         console.error("Error loading plans:", error);
       } finally {
@@ -67,8 +94,7 @@ export function AllPlans() {
   useEffect(() => {
     if (!plans.length) return;
 
-    const cards =
-      document.querySelectorAll(".pricing-card");
+    const cards = document.querySelectorAll(".pricing-card");
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -78,15 +104,30 @@ export function AllPlans() {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3 },
     );
 
-    cards.forEach((card) =>
-      observer.observe(card)
-    );
+    cards.forEach((card) => observer.observe(card));
 
     return () => observer.disconnect();
   }, [plans]);
+
+  function handleSubscribeClick(plan: Plan) {
+    // الـ PaymentModal بيحتاج Membership type كامل، فبنحوله هنا
+    setSelectedPlan({
+      id: plan.id,
+      name: plan.name,
+      title: plan.title,
+      price: plan.price,
+      description: plan.description || "",
+    });
+    setModalOpen(true);
+  }
+
+  function handlePaymentSuccess(membership: MembershipStatus) {
+    setCurrentMembership(membership);
+    onMembershipUpdate?.(membership);
+  }
 
   // =========================
   // PREVENT HYDRATION ERROR
@@ -127,13 +168,14 @@ export function AllPlans() {
         <div className="grid md:grid-cols-3 gap-12 max-w-7xl mx-auto">
           {plans.map((plan) => {
             const typeClass =
-              plan.name?.toLowerCase() === "premium"
-                ? "premium"
-                : "standard";
+              plan.name?.toLowerCase() === "premium" ? "premium" : "standard";
 
             const popular =
-              plan.name === "Premium" &&
-              plan.title === "1 Year";
+              plan.name === "Premium" && plan.title === "1 Year";
+
+            const isCurrentActivePlan =
+              currentMembership?.isActive &&
+              currentMembership.membershipPlanId === plan.id;
 
             return (
               <div
@@ -143,10 +185,14 @@ export function AllPlans() {
                 }`}
               >
                 <div className="pricing-inner flex flex-col">
+                  {popular && !isCurrentActivePlan && (
+                    <div className="popular-badge">MOST VALUE</div>
+                  )}
 
-                  {popular && (
-                    <div className="popular-badge">
-                      MOST VALUE
+                  {isCurrentActivePlan && (
+                    <div className="popular-badge !bg-green-500 !text-black">
+                      <Check size={14} />
+                      YOUR CURRENT PLAN
                     </div>
                   )}
 
@@ -156,13 +202,8 @@ export function AllPlans() {
                     </h3>
 
                     <div>
-                      <span className="price">
-                        ${plan.price}
-                      </span>
-
-                      <span className="period">
-                        {" "} / {plan.title}
-                      </span>
+                      <span className="price">${plan.price}</span>
+                      <span className="period"> / {plan.title}</span>
                     </div>
                   </div>
 
@@ -179,19 +220,31 @@ export function AllPlans() {
                   </div>
 
                   <div className="mt-8">
-                    <Link href="/contact">
-                      <Button className="cta-btn w-full">
-                        Get Started
-                      </Button>
-                    </Link>
+                    <button
+                      onClick={() => handleSubscribeClick(plan)}
+                      disabled={isCurrentActivePlan}
+                      className={`cta-btn w-full h-12 rounded-xl font-bold transition flex items-center justify-center gap-2 ${
+                        isCurrentActivePlan
+                          ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                          : "bg-[#84FF00] text-black hover:scale-[1.02]"
+                      }`}
+                    >
+                      {isCurrentActivePlan ? "Active" : "Subscribe"}
+                    </button>
                   </div>
-
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      <PaymentModal
+        open={modalOpen}
+        plan={selectedPlan}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handlePaymentSuccess}
+      />
     </section>
   );
 }

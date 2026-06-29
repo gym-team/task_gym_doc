@@ -108,12 +108,12 @@ export function LoginForm() {
       }
 
       // store token if returned
-      if (resJson?.token) {
-        if (rememberMe)
-          localStorage.setItem("token", resJson.token);
-        else
-          sessionStorage.setItem("token", resJson.token);
-      }
+     if (resJson?.token) {
+  localStorage.setItem(
+    "token",
+    resJson.token
+  );
+}
 
       toast({
         title: "Login successful 🎉",

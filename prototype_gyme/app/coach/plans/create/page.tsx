@@ -1,0 +1,839 @@
+"use client";
+
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import {
+  TRAINING_GOAL_OPTIONS,
+  FITNESS_LEVEL_OPTIONS,
+  EQUIPMENT_TYPE_OPTIONS,
+  CALORIE_STRATEGY_OPTIONS,
+} from "@/lib/nutrition-plan-enums";
+
+type CreateNutritionPlanResponse = {
+  id?: number;
+};
+
+type CreateNutritionPlanPayload = {
+  linkedWorkoutProgramID: number | null;
+  name: string;
+  description: string;
+  expectedOutcome: string;
+  nextSteps: string;
+  trainingGoal: number;
+  fitnessLevel: number;
+  equipmentType: number;
+  calorieStrategyType: number;
+  durationOnWeeks: number;
+  tdeeAdjustmentKcal: number;
+  absoluteCalorieTarget: number;
+  proteinTargetPerKg: number;
+  photoThumbnailUrl: string | null;
+};
+
+type CoachProgram = {
+  id: number;
+  name: string;
+  trackName?: string | null;
+  isPublished?: boolean;
+};
+
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "https://fitzone-16.runasp.net";
+
+const HERO_IMAGE =
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1600&q=80";
+
+function toNumber(value: string): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function isValidNumber(value: string): boolean {
+  if (!value.trim()) return false;
+  return Number.isFinite(Number(value));
+}
+
+function toNullableNumber(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : null;
+}
+
+async function fetchMyPrograms(token: string): Promise<CoachProgram[]> {
+  const res = await fetch(`${API_URL}/api/Program/mine`, {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Request failed with status ${res.status}`);
+  }
+
+  return (await res.json()) as CoachProgram[];
+}
+
+async function uploadThumbnail(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new Error(data?.error || `Upload failed with status ${res.status}`);
+  }
+
+  const data = (await res.json()) as { url: string };
+  return data.url;
+}
+
+async function createNutritionPlan(
+  payload: CreateNutritionPlanPayload,
+  token: string
+) {
+  const res = await fetch(`${API_URL}/api/nutritionplan`, {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || `Request failed with status ${res.status}`);
+  }
+
+  return (await res.json()) as CreateNutritionPlanResponse;
+}
+
+function PageSection({
+  eyebrow,
+  title,
+  description,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="rounded-[28px] border border-white/10 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+      <div className="mb-5">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#84FF00]">
+          {eyebrow}
+        </p>
+        <h2 className="mt-2 text-xl font-extrabold uppercase tracking-tight text-white sm:text-2xl">
+          {title}
+        </h2>
+        {description ? (
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-white/75">
+            {description}
+          </p>
+        ) : null}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  placeholder,
+  textarea,
+  required,
+  maxLength,
+  helper,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  textarea?: boolean;
+  required?: boolean;
+  maxLength?: number;
+  helper?: string;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-medium text-white/80">
+        {label}
+        {required ? <span className="ml-1 text-[#84FF00]">*</span> : null}
+      </span>
+      {textarea ? (
+        <textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={5}
+          maxLength={maxLength}
+          className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-[#84FF00]/70 focus:ring-2 focus:ring-[#84FF00]/20"
+        />
+      ) : (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required={required}
+          maxLength={maxLength}
+          className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-[#84FF00]/70 focus:ring-2 focus:ring-[#84FF00]/20"
+        />
+      )}
+      {helper ? <span className="text-xs text-white/45">{helper}</span> : null}
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+  helper,
+  step = "1",
+  min,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  helper?: string;
+  step?: string;
+  min?: number;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-medium text-white/80">{label}</span>
+      <input
+        type="number"
+        inputMode="decimal"
+        step={step}
+        min={min}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-sm text-white outline-none placeholder:text-white/35 transition focus:border-[#84FF00]/70 focus:ring-2 focus:ring-[#84FF00]/20"
+      />
+      {helper ? <span className="text-xs text-white/45">{helper}</span> : null}
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: number; label: string }>;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-medium text-white/80">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-sm text-white outline-none transition focus:border-[#84FF00]/70 focus:ring-2 focus:ring-[#84FF00]/20"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value} className="bg-[#0A0A0A]">
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function ProgramSelect({
+  value,
+  onChange,
+  programs,
+  loading,
+  error,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  programs: CoachProgram[];
+  loading: boolean;
+  error: string | null;
+}) {
+  return (
+    <label className="grid gap-2">
+      <span className="text-sm font-medium text-white/80">
+        Linked workout program
+      </span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={loading}
+        className="h-12 rounded-2xl border border-white/10 bg-white/[0.03] px-4 text-sm text-white outline-none transition focus:border-[#84FF00]/70 focus:ring-2 focus:ring-[#84FF00]/20 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        <option value="">None</option>
+        {programs.map((program) => (
+          <option key={program.id} value={program.id} className="bg-[#0A0A0A]">
+            {program.name}
+            {program.trackName ? ` · ${program.trackName}` : ""}
+          </option>
+        ))}
+      </select>
+      {loading ? (
+        <span className="text-xs text-white/45">Loading your programs...</span>
+      ) : error ? (
+        <span className="text-xs text-red-300">{error}</span>
+      ) : (
+        <span className="text-xs text-white/45">
+          Optional. Select one of your programs or leave it as None.
+        </span>
+      )}
+    </label>
+  );
+}
+
+function ImageUploadField({
+  previewUrl,
+  onSelect,
+  onRemove,
+  uploading,
+}: {
+  previewUrl: string | null;
+  onSelect: (file: File | null) => void;
+  onRemove: () => void;
+  uploading: boolean;
+}) {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onSelect(e.target.files?.[0] ?? null);
+  };
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[220px_1fr] lg:items-start">
+      <div className="overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.03]">
+        <div className="flex aspect-square items-center justify-center bg-black/30">
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt="Thumbnail preview"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="px-6 text-center">
+              <div className="text-sm font-semibold text-white">
+                No image selected
+              </div>
+              <div className="mt-1 text-xs text-white/45">
+                PNG, JPG, WEBP, or GIF
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="grid gap-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="inline-flex cursor-pointer items-center rounded-xl border border-white/10 bg-white text-sm font-semibold text-black transition hover:bg-[#84FF00]">
+            <span className="px-4 py-2.5">
+              {uploading ? "Uploading..." : previewUrl ? "Change image" : "Upload image"}
+            </span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+              className="hidden"
+              onChange={handleChange}
+              disabled={uploading}
+            />
+          </label>
+
+          {previewUrl ? (
+            <button
+              type="button"
+              onClick={onRemove}
+              disabled={uploading}
+              className="rounded-xl border border-[#84FF00] bg-transparent px-4 py-2.5 text-sm font-semibold text-[#84FF00] transition hover:bg-[#84FF00] hover:text-black disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Remove
+            </button>
+          ) : null}
+        </div>
+
+        <p className="text-sm leading-6 text-white/75">
+          Upload a clean cover image for the plan. The file is stored on the server and the returned URL is saved with the plan.
+        </p>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/50">
+          Recommended size: 1200 × 800 or higher. Maximum file size: 5 MB.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function CreateNutritionPlanPage() {
+  const router = useRouter();
+
+  const [token, setToken] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [programs, setPrograms] = useState<CoachProgram[]>([]);
+  const [programsError, setProgramsError] = useState<string | null>(null);
+  const [thumbnailPreviewUrl, setThumbnailPreviewUrl] = useState<string | null>(
+    null
+  );
+  const [form, setForm] = useState({
+    linkedWorkoutProgramID: "",
+    name: "",
+    description: "",
+    expectedOutcome: "",
+    nextSteps: "",
+    trainingGoal: "0",
+    fitnessLevel: "0",
+    equipmentType: "0",
+    calorieStrategyType: "0",
+    durationOnWeeks: "4",
+    tdeeAdjustmentKcal: "0",
+    absoluteCalorieTarget: "0",
+    proteinTargetPerKg: "2",
+    photoThumbnailUrl: "",
+  });
+
+  useEffect(() => {
+    const storedToken =
+      localStorage.getItem("token") ||
+      localStorage.getItem("accessToken") ||
+      "";
+    setToken(storedToken);
+  }, []);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let mounted = true;
+    setPlansLoading(true);
+    setProgramsError(null);
+
+    fetchMyPrograms(token)
+      .then((data) => {
+        if (mounted) setPrograms(Array.isArray(data) ? data : []);
+      })
+      .catch((err) => {
+        if (mounted) {
+          setProgramsError(
+            err instanceof Error ? err.message : "Failed to load programs"
+          );
+        }
+      })
+      .finally(() => {
+        if (mounted) setPlansLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [token]);
+
+  useEffect(() => {
+    return () => {
+      if (thumbnailPreviewUrl) URL.revokeObjectURL(thumbnailPreviewUrl);
+    };
+  }, [thumbnailPreviewUrl]);
+
+  const payload = useMemo<CreateNutritionPlanPayload>(() => {
+    return {
+      linkedWorkoutProgramID: toNullableNumber(form.linkedWorkoutProgramID),
+      name: form.name.trim(),
+      description: form.description.trim(),
+      expectedOutcome: form.expectedOutcome.trim(),
+      nextSteps: form.nextSteps.trim(),
+      trainingGoal: toNumber(form.trainingGoal),
+      fitnessLevel: toNumber(form.fitnessLevel),
+      equipmentType: toNumber(form.equipmentType),
+      calorieStrategyType: toNumber(form.calorieStrategyType),
+      durationOnWeeks: toNumber(form.durationOnWeeks),
+      tdeeAdjustmentKcal: toNumber(form.tdeeAdjustmentKcal),
+      absoluteCalorieTarget: toNumber(form.absoluteCalorieTarget),
+      proteinTargetPerKg: toNumber(form.proteinTargetPerKg),
+      photoThumbnailUrl: form.photoThumbnailUrl.trim() || null,
+    };
+  }, [form]);
+
+  const handleThumbnailSelect = async (file: File | null) => {
+    if (!file) return;
+
+    const allowedTypes = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+      "image/gif",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      setError("Unsupported image format. Use PNG, JPG, WEBP, or GIF.");
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError("Image size must be 5 MB or smaller.");
+      return;
+    }
+
+    setError(null);
+
+    const preview = URL.createObjectURL(file);
+    setThumbnailPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return preview;
+    });
+
+    try {
+      setUploadingThumbnail(true);
+      const url = await uploadThumbnail(file);
+      setForm((s) => ({ ...s, photoThumbnailUrl: url }));
+    } catch (err) {
+      setForm((s) => ({ ...s, photoThumbnailUrl: "" }));
+      setThumbnailPreviewUrl((current) => {
+        if (current) URL.revokeObjectURL(current);
+        return null;
+      });
+      setError(
+        err instanceof Error ? err.message : "Failed to upload the image."
+      );
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
+
+  const handleRemoveThumbnail = () => {
+    setForm((s) => ({ ...s, photoThumbnailUrl: "" }));
+    setThumbnailPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return null;
+    });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      setError(null);
+      setLoading(true);
+
+      if (!token) {
+        throw new Error("Authentication is required. Please sign in again.");
+      }
+
+      const name = form.name.trim();
+      const description = form.description.trim();
+      const duration = Number(form.durationOnWeeks);
+      const protein = Number(form.proteinTargetPerKg);
+
+      if (!name) {
+        throw new Error("Plan name is required.");
+      }
+
+      if (name.length < 3) {
+        throw new Error("Plan name must be at least 3 characters long.");
+      }
+
+      if (name.length > 120) {
+        throw new Error("Plan name must be 120 characters or fewer.");
+      }
+
+      if (!description) {
+        throw new Error("Description is required.");
+      }
+
+      if (description.length < 20) {
+        throw new Error("Description must be at least 20 characters long.");
+      }
+
+      if (!isValidNumber(form.durationOnWeeks) || duration < 1) {
+        throw new Error("Duration must be at least 1 week.");
+      }
+
+      if (!isValidNumber(form.proteinTargetPerKg) || protein <= 0) {
+        throw new Error("Protein target must be greater than 0.");
+      }
+
+      if (uploadingThumbnail) {
+        throw new Error("Please wait for the image upload to finish.");
+      }
+
+      const result = await createNutritionPlan(payload, token);
+      const id = result?.id;
+
+      if (id === undefined || id === null) {
+        throw new Error("Plan was created, but no ID was returned.");
+      }
+
+      router.push(`/coach/plans/${id}/edit`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create plan");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-[#050505] text-white">
+      <section className="relative isolate overflow-hidden border-b border-white/10">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{ backgroundImage: `url(${HERO_IMAGE})` }}
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(132,255,0,0.14),rgba(0,0,0,0.18),#050505)]" />
+        <div className="absolute -left-24 top-0 h-72 w-72 rounded-full bg-[#84FF00]/20 blur-[140px]" />
+        <div className="absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-[#FF6B00]/15 blur-[140px]" />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.9) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.9) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
+          <div className="relative max-w-4xl">
+            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#84FF00]">
+              Coach Nutrition Plans
+            </p>
+            <h1 className="mt-4 text-4xl font-black uppercase tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Create a premium nutrition plan
+            </h1>
+            <p className="mt-5 max-w-3xl text-base leading-7 text-white/75 sm:text-lg">
+              Build a new plan with a clean workflow, structured fields, and a cover image that is uploaded and saved automatically.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              {["Coach-owned", "Image upload", "Program dropdown", "Professional UI"].map(
+                (item) => (
+                  <span
+                    key={item}
+                    className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs font-medium text-white/80 backdrop-blur"
+                  >
+                    {item}
+                  </span>
+                )
+              )}
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => router.push("/coach/plans")}
+                className="h-11 rounded-xl border border-[#84FF00] bg-transparent px-5 text-sm font-semibold text-[#84FF00] transition hover:bg-[#84FF00] hover:text-black"
+              >
+                Back to plans
+              </button>
+              <button
+                type="submit"
+                form="nutrition-plan-create-form"
+                disabled={loading || uploadingThumbnail}
+                className="h-11 rounded-xl bg-white px-5 text-sm font-semibold text-black transition hover:bg-[#84FF00] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "Creating..." : "Create plan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        {error ? (
+          <div className="mb-6 rounded-[24px] border border-red-500/20 bg-red-500/10 p-5 text-sm text-red-100">
+            {error}
+          </div>
+        ) : null}
+
+        <form
+          id="nutrition-plan-create-form"
+          onSubmit={handleSubmit}
+          className="grid gap-6"
+        >
+          <PageSection
+            eyebrow="Overview"
+            title="Basic metadata"
+            description="Define the identity, purpose, and structure of the nutrition plan."
+          >
+            <div className="grid gap-5 md:grid-cols-2">
+              <Field
+                label="Plan name"
+                value={form.name}
+                onChange={(v) => setForm((s) => ({ ...s, name: v }))}
+                placeholder="12-Week Fat Loss Transformation"
+                required
+                maxLength={120}
+                helper="Use a clear, specific title."
+              />
+
+              <ProgramSelect
+                value={form.linkedWorkoutProgramID}
+                onChange={(v) =>
+                  setForm((s) => ({ ...s, linkedWorkoutProgramID: v }))
+                }
+                programs={programs}
+                loading={plansLoading}
+                error={programsError}
+              />
+            </div>
+
+            <div className="mt-5 grid gap-5">
+              <Field
+                label="Description"
+                value={form.description}
+                onChange={(v) => setForm((s) => ({ ...s, description: v }))}
+                placeholder="Describe the plan clearly and professionally."
+                textarea
+                required
+                maxLength={800}
+              />
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <Field
+                  label="Expected outcome"
+                  value={form.expectedOutcome}
+                  onChange={(v) =>
+                    setForm((s) => ({ ...s, expectedOutcome: v }))
+                  }
+                  placeholder="What should the user achieve?"
+                  textarea
+                  maxLength={300}
+                />
+
+                <Field
+                  label="Next steps"
+                  value={form.nextSteps}
+                  onChange={(v) => setForm((s) => ({ ...s, nextSteps: v }))}
+                  placeholder="What comes after this plan?"
+                  textarea
+                  maxLength={300}
+                />
+              </div>
+            </div>
+          </PageSection>
+
+          <PageSection
+            eyebrow="Configuration"
+            title="Plan attributes"
+            description="Choose the structured values that power the plan behavior."
+          >
+            <div className="grid gap-5 md:grid-cols-3">
+              <SelectField
+                label="Training goal"
+                value={form.trainingGoal}
+                onChange={(v) => setForm((s) => ({ ...s, trainingGoal: v }))}
+                options={TRAINING_GOAL_OPTIONS}
+              />
+              <SelectField
+                label="Fitness level"
+                value={form.fitnessLevel}
+                onChange={(v) => setForm((s) => ({ ...s, fitnessLevel: v }))}
+                options={FITNESS_LEVEL_OPTIONS}
+              />
+              <SelectField
+                label="Equipment type"
+                value={form.equipmentType}
+                onChange={(v) => setForm((s) => ({ ...s, equipmentType: v }))}
+                options={EQUIPMENT_TYPE_OPTIONS}
+              />
+            </div>
+
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+              <SelectField
+                label="Calorie strategy"
+                value={form.calorieStrategyType}
+                onChange={(v) =>
+                  setForm((s) => ({ ...s, calorieStrategyType: v }))
+                }
+                options={CALORIE_STRATEGY_OPTIONS}
+              />
+              <NumberField
+                label="Duration in weeks"
+                value={form.durationOnWeeks}
+                onChange={(v) => setForm((s) => ({ ...s, durationOnWeeks: v }))}
+                helper="Minimum: 1 week"
+                min={1}
+              />
+            </div>
+
+            <div className="mt-5 grid gap-5 md:grid-cols-3">
+              <NumberField
+                label="TDEE adjustment kcal"
+                value={form.tdeeAdjustmentKcal}
+                onChange={(v) => setForm((s) => ({ ...s, tdeeAdjustmentKcal: v }))}
+              />
+              <NumberField
+                label="Absolute calorie target"
+                value={form.absoluteCalorieTarget}
+                onChange={(v) =>
+                  setForm((s) => ({ ...s, absoluteCalorieTarget: v }))
+                }
+              />
+              <NumberField
+                label="Protein target per kg"
+                value={form.proteinTargetPerKg}
+                onChange={(v) =>
+                  setForm((s) => ({ ...s, proteinTargetPerKg: v }))
+                }
+                helper="Must be greater than 0"
+                step="0.1"
+                min={0}
+              />
+            </div>
+          </PageSection>
+
+          <PageSection
+            eyebrow="Media"
+            title="Thumbnail image"
+            description="Upload a cover image. The file is sent to the server, stored, and the returned link is saved automatically."
+          >
+            <ImageUploadField
+              previewUrl={thumbnailPreviewUrl}
+              onSelect={handleThumbnailSelect}
+              onRemove={handleRemoveThumbnail}
+              uploading={uploadingThumbnail}
+            />
+
+            <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-xs text-white/45">
+              The uploaded image URL is stored in the plan automatically.
+            </div>
+          </PageSection>
+
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => router.push("/coach/plans")}
+              className="h-11 rounded-xl border border-white/10 bg-white/[0.03] px-5 text-sm font-semibold text-white transition hover:border-white/20 hover:bg-white/[0.05]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading || uploadingThumbnail || plansLoading}
+              className="h-11 rounded-xl bg-white px-5 text-sm font-semibold text-black transition hover:bg-[#84FF00] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Creating..." : "Create plan"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  );
+}

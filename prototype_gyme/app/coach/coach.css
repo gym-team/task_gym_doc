@@ -1,0 +1,231 @@
+/* ============================================
+   Coach Section Tabs — horizontal pill nav
+   Replaces the old vertical sidebar.
+   Append this block to the existing coach.css
+   (replaces the previous coach-tabs.css block —
+   use this version instead)
+   ============================================ */
+
+.coach-tabs-shell {
+  position: relative;
+  width: 100%;
+}
+
+/* Ambient glow sitting behind the whole tab strip */
+.coach-tabs-glow {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 50%;
+  height: 60px;
+  transform: translateY(-50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(132, 255, 0, 0.16),
+    transparent 70%
+  );
+  filter: blur(18px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  animation: coachGlowIn 1.1s ease-out 0.15s forwards,
+    coachGlowPulse 4s ease-in-out 1.3s infinite;
+}
+
+.coach-tabs-track {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  padding: 0.25rem 0.25rem 0.5rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.coach-tabs-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* fade hint at the edges so people know it scrolls, without a visible bar */
+.coach-tabs-shell::before,
+.coach-tabs-shell::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0.5rem;
+  width: 28px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.coach-tabs-shell::before {
+  left: 0;
+  background: linear-gradient(to right, #050505, transparent);
+}
+
+.coach-tabs-shell::after {
+  right: 0;
+  background: linear-gradient(to left, #050505, transparent);
+}
+
+.coach-tab-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  white-space: nowrap;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+  transition: border-color 0.2s ease, background-color 0.2s ease,
+    color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+
+  /* entrance animation — staggered pop-in on mount */
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  animation: coachTabIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(var(--stagger-index, 0) * 70ms);
+}
+
+.coach-tab-pill:hover {
+  color: rgba(255, 255, 255, 0.92);
+  border-color: rgba(132, 255, 0, 0.3);
+  background: rgba(132, 255, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+.coach-tab-pill svg {
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.coach-tab-pill:hover svg {
+  opacity: 1;
+}
+
+.coach-tab-pill--active {
+  color: #050505;
+  background: #84ff00;
+  border-color: #84ff00;
+  box-shadow: 0 8px 24px rgba(132, 255, 0, 0.32);
+  animation: coachTabIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    coachActivePulse 2.6s ease-in-out 0.8s infinite;
+  animation-delay: calc(var(--stagger-index, 0) * 70ms), 0.8s;
+}
+
+.coach-tab-pill--active svg {
+  opacity: 1;
+}
+
+.coach-tab-pill--active:hover {
+  transform: none;
+  background: #84ff00;
+  border-color: #84ff00;
+}
+
+/* Shimmer sheen that sweeps across each pill once on load */
+.coach-tab-pill__sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.coach-tab-pill--active .coach-tab-pill__sheen {
+  animation: coachSheenSweep 1.1s ease-out forwards;
+  animation-delay: calc(var(--stagger-index, 0) * 70ms + 0.45s);
+}
+
+/* Tighter spacing on small screens so more tabs peek into view */
+@media (max-width: 640px) {
+  .coach-tab-pill {
+    padding: 0.55rem 0.9rem;
+    font-size: 0.76rem;
+  }
+
+  .coach-tabs-track {
+    gap: 0.4rem;
+  }
+}
+
+/* ---------- keyframes ---------- */
+
+@keyframes coachTabIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes coachGlowIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes coachGlowPulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translateY(-50%) scaleX(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scaleX(1.06);
+  }
+}
+
+@keyframes coachActivePulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 24px rgba(132, 255, 0, 0.32);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(132, 255, 0, 0.55);
+  }
+}
+
+@keyframes coachSheenSweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .coach-tabs-track {
+    scroll-behavior: auto;
+  }
+
+  .coach-tab-pill,
+  .coach-tabs-glow,
+  .coach-tab-pill__sheen {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
