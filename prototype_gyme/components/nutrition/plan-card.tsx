@@ -10,12 +10,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { NutritionPlan } from "@/types/nutrition-plan";
 
+// NutritionPlan الحقيقي بالفعل فيه:
+// coachRating, expectedOutcome, photoThumbnailUrl, isLinkedToProgram
+// مفيش حاجة اسمها thumbnailUrl أو linkedToProgram في الـ API الحقيقي،
+// فمحتاجين نستخدم الأسماء الصحيحة دي بس
 export type NutritionPlanCardData = NutritionPlan & {
-  thumbnailUrl?: string;
-  coachRating?: number;
-  linkedToProgram?: boolean;
   dayProtocolCount?: number;
-  expectedOutcome?: string;
 };
 
 interface PlanCardProps {
@@ -30,8 +30,27 @@ const fadeUp = {
   transition: { duration: 0.45 },
 } as const;
 
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "https://fitzone-16.runasp.net";
+
+// نفس منطق resolveImageSrc بتاع صفحة coach/plans:
+// - http(s) كامل -> يستخدم كما هو
+// - /uploads/... -> ده مخزن جوه public/uploads بتاع Next.js نفسه، يفضل كما هو
+// - أي path نسبي تاني -> نفترض إنه على الـ API ونلحقه بـ API_URL
+function resolveImageSrc(url?: string | null) {
+  if (!url) return "/plansimagedeful.png";
+
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+  if (url.startsWith("/uploads/")) return url;
+
+  const normalized = url.startsWith("/") ? url : `/${url}`;
+  return `${API_URL}${normalized}`;
+}
+
 export function PlanCard({ plan, className }: PlanCardProps) {
-  const imageSrc = plan.thumbnailUrl || "/plansimagedeful.png";
+  const imageSrc = resolveImageSrc(plan.photoThumbnailUrl);
   const rating = plan.coachRating ?? 4.8;
 
   return (
@@ -42,9 +61,10 @@ export function PlanCard({ plan, className }: PlanCardProps) {
         <div className="relative">
           <div className="relative aspect-[16/10] overflow-hidden">
             <Image
-              src={`/${imageSrc}`}
+              src={imageSrc}
               alt={plan.name}
               fill
+              unoptimized={imageSrc.startsWith("http")}
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
@@ -60,7 +80,7 @@ export function PlanCard({ plan, className }: PlanCardProps) {
                 </Badge>
               )}
 
-              {plan.linkedToProgram ? (
+              {plan.isLinkedToProgram ? (
                 <Badge className="border-0 bg-[#00D9FF]/20 text-[#00D9FF] hover:bg-[#00D9FF]/20">
                   Linked Program
                 </Badge>

@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import {
-  User,
-  Mail,
-  Ruler,
-  Weight,
-  MapPin,
-  Calendar,
+  Dumbbell,
+  Award,
+  DollarSign,
+  Star,
+  Briefcase,
   Loader2,
   CheckCircle2,
   XCircle,
@@ -16,27 +15,18 @@ import {
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import {
-  getMyProfile,
-  updateMyProfile,
-  Trainee,
-  Gender,
-} from "@/lib/Trainee";
+  getMyCoachProfile,
+  updateMyCoachProfile,
+  Coach,
+} from "@/lib/coach";
 
 type FormState = {
-  gender: Gender;
-  weight: string;
-  height: string;
-  address: string;
-  dateOfBirth: string; // yyyy-MM-dd, متوافق مع <input type="date">
+  about: string;
+  yearsOfExperience: string;
+  price: string;
 };
 
 type SaveState = "idle" | "saving" | "success" | "error";
-
-function toDateInputValue(isoString: string): string {
-  // بياخد أي صيغة تاريخ جاية من الـ API ويحولها لـ yyyy-MM-dd
-  if (!isoString) return "";
-  return isoString.split("T")[0];
-}
 
 function getInitials(fullName: string | undefined | null): string {
   if (!fullName) return "?";
@@ -51,17 +41,15 @@ function getInitials(fullName: string | undefined | null): string {
   );
 }
 
-export default function ProfilePage() {
-  const [profile, setProfile] = useState<Trainee | null>(null);
+export default function CoachProfilePage() {
+  const [profile, setProfile] = useState<Coach | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
   const [form, setForm] = useState<FormState>({
-    gender: "Male",
-    weight: "",
-    height: "",
-    address: "",
-    dateOfBirth: "",
+    about: "",
+    yearsOfExperience: "",
+    price: "",
   });
 
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -73,17 +61,15 @@ export default function ProfilePage() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const data = await getMyProfile();
+        const data = await getMyCoachProfile();
         setProfile(data);
         setForm({
-          gender: data.gender,
-          weight: String(data.weight ?? ""),
-          height: String(data.height ?? ""),
-          address: data.address ?? "",
-          dateOfBirth: toDateInputValue(data.dateOfBirth),
+          about: data.about ?? "",
+          yearsOfExperience: String(data.yearsOfExperience ?? ""),
+          price: String(data.price ?? ""),
         });
       } catch (err) {
-        console.error("Failed to load profile", err);
+        console.error("Failed to load coach profile", err);
         setLoadError("Couldn't load your profile. Please try again.");
       } finally {
         setLoading(false);
@@ -109,37 +95,30 @@ export default function ProfilePage() {
     setSaveError("");
 
     try {
-      const weightNum = Number(form.weight);
-      const heightNum = Number(form.height);
+      const experienceNum = Number(form.yearsOfExperience);
+      const priceNum = Number(form.price);
 
-      if (!form.dateOfBirth) {
-        throw new Error("Please select your date of birth.");
+      if (!form.about.trim()) {
+        throw new Error("Please write a short bio about yourself.");
       }
-      if (!weightNum || weightNum <= 0) {
-        throw new Error("Please enter a valid weight.");
+      if (!Number.isFinite(experienceNum) || experienceNum < 0) {
+        throw new Error("Please enter a valid number of years of experience.");
       }
-      if (!heightNum || heightNum <= 0) {
-        throw new Error("Please enter a valid height.");
-      }
-      if (!form.address.trim()) {
-        throw new Error("Please enter your address.");
+      if (!priceNum || priceNum <= 0) {
+        throw new Error("Please enter a valid price.");
       }
 
-      const updated = await updateMyProfile({
-        gender: form.gender,
-        weight: weightNum,
-        height: heightNum,
-        address: form.address.trim(),
-        // نثبّت التاريخ على منتصف الليل UTC صريحًا، بدل الاعتماد على
-        // تحويل ضمني قد يختلف حسب توقيت المتصفح ويغيّر اليوم بمقدار يوم
-        dateOfBirth: `${form.dateOfBirth}T00:00:00.000Z`,
+      const updated = await updateMyCoachProfile({
+        about: form.about.trim(),
+        yearsOfExperience: experienceNum,
+        price: priceNum,
       });
 
-      // الـ PUT برجع بس الحقول اللي حدثها (gender, weight, height, address,
-      // dateOfBirth) ومش برجع fullName/email/id/photoUrl. لو استبدلنا الـ
+      // الـ PUT برجع بس الحقول اللي حدثها (about, yearsOfExperience, price)
+      // ومش برجع fullName/rating/photoUrl/programCount. لو استبدلنا الـ
       // profile بالكامل بنتيجة الـ PUT هنفقد الحقول دي من الواجهة، فبندمج
       // النتيجة فوق الـ profile القديم بدل الاستبدال الكامل
-      setProfile((prev) => (prev ? { ...prev, ...updated } : updated));
+      setProfile((prev) => (prev ? { ...prev, ...updated } : prev));
       setSaveState("success");
 
       setTimeout(() => {
@@ -168,15 +147,15 @@ export default function ProfilePage() {
             <div className="inline-flex items-center gap-2 rounded-full border border-[#84FF00]/30 bg-[#84FF00]/5 px-4 py-1.5 mb-6">
               <span className="h-1.5 w-1.5 rounded-full bg-[#84FF00]" />
               <span className="text-xs font-bold tracking-widest text-[#84FF00] uppercase">
-                My Profile
+                Coach Profile
               </span>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-black uppercase text-white tracking-tight">
-              ACCOUNT <span className="text-[#84FF00]">SETTINGS</span>
+              COACH <span className="text-[#84FF00]">SETTINGS</span>
             </h1>
             <p className="mt-3 text-zinc-400">
-              Manage your personal information and physical stats.
+              Manage your public bio, experience, and coaching rate.
             </p>
           </div>
 
@@ -202,11 +181,19 @@ export default function ProfilePage() {
               {/* ---------- IDENTITY CARD ---------- */}
               <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-8 flex flex-col items-center text-center h-fit">
                 <div className="relative">
-                  <div className="h-28 w-28 rounded-full bg-gradient-to-br from-[#84FF00]/30 to-[#00D9FF]/20 border border-[#84FF00]/30 flex items-center justify-center">
-                    <span className="text-3xl font-black text-[#84FF00]">
-                      {getInitials(profile.fullName)}
-                    </span>
-                  </div>
+                  {profile.photoUrl ? (
+                    <img
+                      src={profile.photoUrl}
+                      alt={profile.fullName}
+                      className="h-28 w-28 rounded-full object-cover border border-[#84FF00]/30"
+                    />
+                  ) : (
+                    <div className="h-28 w-28 rounded-full bg-gradient-to-br from-[#84FF00]/30 to-[#00D9FF]/20 border border-[#84FF00]/30 flex items-center justify-center">
+                      <span className="text-3xl font-black text-[#84FF00]">
+                        {getInitials(profile.fullName)}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <h2 className="mt-5 text-xl font-extrabold text-white">
@@ -214,21 +201,36 @@ export default function ProfilePage() {
                 </h2>
 
                 <div className="mt-2 flex items-center gap-2 text-zinc-400 text-sm">
-                  <Mail size={14} />
-                  <span className="truncate">{profile.email}</span>
+                  <Star size={14} className="text-[#84FF00] fill-[#84FF00]" />
+                  <span>{profile.rating.toFixed(1)} rating</span>
                 </div>
 
                 <div className="mt-6 w-full pt-6 border-t border-white/10 space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-500">Weight</span>
+                    <span className="text-zinc-500 flex items-center gap-2">
+                      <Award size={14} className="text-[#00D9FF]" />
+                      Experience
+                    </span>
                     <span className="font-bold text-white">
-                      {form.weight || "—"} kg
+                      {form.yearsOfExperience || "—"} yrs
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-500">Height</span>
+                    <span className="text-zinc-500 flex items-center gap-2">
+                      <DollarSign size={14} className="text-[#00D9FF]" />
+                      Price
+                    </span>
                     <span className="font-bold text-white">
-                      {form.height || "—"} cm
+                      ${form.price || "—"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-zinc-500 flex items-center gap-2">
+                      <Briefcase size={14} className="text-[#00D9FF]" />
+                      Programs
+                    </span>
+                    <span className="font-bold text-white">
+                      {profile.programCount}
                     </span>
                   </div>
                 </div>
@@ -237,106 +239,72 @@ export default function ProfilePage() {
               {/* ---------- EDITABLE FORM ---------- */}
               <div className="rounded-3xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-8">
                 <h3 className="text-lg font-bold text-white uppercase tracking-wide mb-6">
-                  Personal Information
+                  Public Profile
                 </h3>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Gender */}
+                <div className="grid grid-cols-1 gap-6">
+                  {/* About */}
                   <div>
                     <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
-                      <User size={14} className="text-[#84FF00]" />
-                      Gender
+                      <Dumbbell size={14} className="text-[#84FF00]" />
+                      About / Bio
                     </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(["Male", "Female"] as Gender[]).map((g) => (
-                        <button
-                          key={g}
-                          type="button"
-                          disabled={isSaving}
-                          onClick={() => handleChange("gender", g)}
-                          className={`h-11 rounded-xl border font-semibold text-sm transition disabled:opacity-50 ${
-                            form.gender === g
-                              ? "border-[#84FF00] bg-[#84FF00]/10 text-[#84FF00]"
-                              : "border-white/10 bg-black/30 text-zinc-400 hover:border-white/20"
-                          }`}
-                        >
-                          {g}
-                        </button>
-                      ))}
+                    <textarea
+                      value={form.about}
+                      disabled={isSaving}
+                      onChange={(e) => handleChange("about", e.target.value)}
+                      placeholder="Tell trainees about your coaching background and approach..."
+                      rows={5}
+                      className="w-full rounded-xl border border-white/10 bg-black/30 px-4 py-3 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50 resize-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {/* Years of Experience */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
+                        <Award size={14} className="text-[#84FF00]" />
+                        Years of Experience
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step="1"
+                        value={form.yearsOfExperience}
+                        disabled={isSaving}
+                        onChange={(e) =>
+                          handleChange("yearsOfExperience", e.target.value)
+                        }
+                        placeholder="e.g. 7"
+                        className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50"
+                      />
+                    </div>
+
+                    {/* Price */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
+                        <DollarSign size={14} className="text-[#84FF00]" />
+                        Price (per program)
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        step="0.01"
+                        value={form.price}
+                        disabled={isSaving}
+                        onChange={(e) => handleChange("price", e.target.value)}
+                        placeholder="e.g. 60"
+                        className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50"
+                      />
                     </div>
                   </div>
-
-                  {/* Date of Birth */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
-                      <Calendar size={14} className="text-[#84FF00]" />
-                      Date of Birth
-                    </label>
-                    <input
-                      type="date"
-                      value={form.dateOfBirth}
-                      disabled={isSaving}
-                      onChange={(e) =>
-                        handleChange("dateOfBirth", e.target.value)
-                      }
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50 [color-scheme:dark]"
-                    />
-                  </div>
-
-                  {/* Weight */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
-                      <Weight size={14} className="text-[#84FF00]" />
-                      Weight (kg)
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      step="0.1"
-                      value={form.weight}
-                      disabled={isSaving}
-                      onChange={(e) => handleChange("weight", e.target.value)}
-                      placeholder="e.g. 82"
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50"
-                    />
-                  </div>
-
-                  {/* Height */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
-                      <Ruler size={14} className="text-[#84FF00]" />
-                      Height (cm)
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      step="0.1"
-                      value={form.height}
-                      disabled={isSaving}
-                      onChange={(e) => handleChange("height", e.target.value)}
-                      placeholder="e.g. 178"
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50"
-                    />
-                  </div>
-
-                  {/* Address */}
-                  <div className="sm:col-span-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-zinc-400 mb-2">
-                      <MapPin size={14} className="text-[#84FF00]" />
-                      Address
-                    </label>
-                    <input
-                      type="text"
-                      value={form.address}
-                      disabled={isSaving}
-                      onChange={(e) =>
-                        handleChange("address", e.target.value)
-                      }
-                      placeholder="e.g. Cairo, Egypt"
-                      className="h-11 w-full rounded-xl border border-white/10 bg-black/30 px-4 text-white text-sm focus:border-[#84FF00] focus:outline-none transition disabled:opacity-50"
-                    />
-                  </div>
                 </div>
+
+                {/* ---------- READ-ONLY STATS NOTE ---------- */}
+                <p className="mt-4 text-xs text-zinc-500">
+                  Name, rating, and program count are managed automatically and
+                  can't be edited here.
+                </p>
 
                 {/* ---------- FEEDBACK ---------- */}
                 {saveState === "error" && saveError && (

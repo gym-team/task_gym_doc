@@ -29,6 +29,8 @@ import {
   Home,
   UtensilsCrossed,
   PlayCircle,
+  CircleUser,
+  MessageCircle,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -149,6 +151,7 @@ export function Navigation() {
     { href: "/membership", label: "Membership", icon: BadgeCheck },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
+     { href: "/contacts", label: "Chat",icon: MessageCircle },
   ]
 
   const traineeLinks: NavItem[] = [
@@ -162,12 +165,13 @@ export function Navigation() {
     { href: "/coach/plans", label: "Plan Builder", icon: ChefHat },
     { href: "/coach/foods", label: "Food Library", icon: Apple },
     { href: "/coach/constraints", label: "Constraints", icon: Settings2 },
+      { href: "/coach/profile", label: "Profile", icon: CircleUser },
   ]
 
   const adminLinks: NavItem[] = [
     { href: "/admin", label: "Admin Dashboard", icon: ShieldCheck },
     { href: "/admin/exercise", label: "Exercises", icon: ShieldCheck },
-
+    { href: "/admin/profile", label: "Profile", icon: CircleUser},
 
   ]
 
