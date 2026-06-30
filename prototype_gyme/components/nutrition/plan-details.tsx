@@ -56,7 +56,28 @@ function formatTarget(plan: NutritionPlanDetails) {
   return "TDEE based";
 }
 
-function getHeroImage(plan: NutritionPlanDetails) {
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
+  "https://fitzone-16.runasp.net";
+
+// نفس منطق resolveImageSrc المستخدم في باقي الصفحات (coach/plans, PlanCard):
+// - http(s) كامل -> يستخدم كما هو
+// - /uploads/... -> مخزن جوه public/uploads بتاع Next.js نفسه، يفضل كما هو
+// - أي path نسبي تاني -> نفترض إنه على الـ API ونلحقه بالـ API_BASE
+function resolveImageSrc(url?: string | null): string | null {
+  if (!url) return null;
+
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+  if (url.startsWith("/uploads/")) return url;
+
+  const normalized = url.startsWith("/") ? url : `/${url}`;
+  return `${API_BASE}${normalized}`;
+}
+
+// الصور الثابتة دي بتتستخدم بس كـ fallback لو الخطة مفيهاش صورة مرفوعة
+// (photoThumbnailUrl) أصلاً
+function getFallbackHeroImage(plan: NutritionPlanDetails) {
   const goal = (plan.trainingGoal || "").toLowerCase();
 
   if (goal.includes("fat") || goal.includes("loss") || goal.includes("cut")) {
@@ -92,8 +113,6 @@ function getStoredToken() {
   );
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-
 export function PlanDetails({ plan }: PlanDetailsProps) {
   const router = useRouter();
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -104,7 +123,18 @@ export function PlanDetails({ plan }: PlanDetailsProps) {
   );
 
   const planId = useMemo(() => plan.id ?? null, [plan.id]);
-  const heroImage = useMemo(() => getHeroImage(plan), [plan]);
+
+  // أولوية للصورة الحقيقية بتاعة الخطة (photoThumbnailUrl)، ولو مش موجودة
+  // نرجع للصورة الثابتة حسب الـ goal
+  const heroImage = useMemo(
+    () => resolveImageSrc(plan.photoThumbnailUrl) || getFallbackHeroImage(plan),
+    [plan]
+  );
+
+  // الصور الجاية من الـ API (absolute URL أو من فولدر uploads بتاع
+  // Next.js) لسه ممكن تكون مش مضافة في next.config.js remotePatterns،
+  // فبنعطّل التحسين بتاعها لحد ما الدومين يتضاف هناك
+  const isRemoteImage = heroImage.startsWith("http");
 
   const coachInitial =
     plan.coachName?.trim()?.charAt(0)?.toUpperCase() || "E";
@@ -213,6 +243,7 @@ export function PlanDetails({ plan }: PlanDetailsProps) {
               src={heroImage}
               alt={plan.name}
               fill
+              unoptimized={isRemoteImage}
               className="object-cover"
               priority
             />

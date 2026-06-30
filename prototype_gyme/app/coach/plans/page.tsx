@@ -28,6 +28,10 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ||
   "https://fitzone-16.runasp.net";
 
+// Fallback image shown whenever a plan has no photo, or the photo URL fails to load.
+const FALLBACK_PLAN_IMAGE =
+  "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=300&q=80";
+
 async function fetchCoachPlans(token: string) {
   const res = await fetch(`${API_URL}/api/nutritionplan/coach`, {
     method: "GET",
@@ -143,7 +147,12 @@ function PlanCard({
 }) {
   const [busy, setBusy] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [imgError, setImgError] = useState(false);
+
   const imageSrc = resolveImageSrc(plan.photoThumbnailUrl);
+  // Show the fallback gym image whenever there's no thumbnail at all,
+  // OR the thumbnail URL exists but failed to actually load (broken/404).
+  const showFallback = !imageSrc || imgError;
 
   const statusLabel = plan.isPublished ? "Published" : "Draft";
   const statusClass = plan.isPublished
@@ -184,17 +193,12 @@ function PlanCard({
 
       <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="shrink-0">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={plan.name}
-              className="h-36 w-36 rounded-2xl border border-white/10 object-cover shadow-lg"
-            />
-          ) : (
-            <div className="flex h-36 w-36 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xs text-white/40">
-              NO IMAGE
-            </div>
-          )}
+          <img
+            src={showFallback ? FALLBACK_PLAN_IMAGE : imageSrc}
+            alt={plan.name}
+            onError={() => setImgError(true)}
+            className="h-36 w-36 rounded-2xl border border-white/10 object-cover shadow-lg"
+          />
         </div>
 
         <div className="min-w-0 flex-1">

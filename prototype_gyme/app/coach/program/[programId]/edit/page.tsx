@@ -695,7 +695,7 @@ export default function EditProgramPage() {
 
       await updateProgram(programId, payload, token);
 
-      router.push(`/coach/programs/${programId}`);
+      router.push(`/coach/program/${programId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update program");
     } finally {

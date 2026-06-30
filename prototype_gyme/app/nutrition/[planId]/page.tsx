@@ -91,59 +91,79 @@ export default async function NutritionPlanDetailsPage({
       <div className="fixed bottom-0 right-0 -z-10 h-[520px] w-[520px] rounded-full bg-[#00D9FF]/10 blur-[160px]" />
 
       <main className="relative z-10 pt-16">
-        <section className="py-20 md:py-28">
-          <div className="container mx-auto px-5">
-            <div className="mx-auto max-w-6xl">
-              <div className="mb-10 text-center">
-                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#84FF00]/20 bg-[#84FF00]/10 px-5 py-2 backdrop-blur-xl">
-                  <div className="h-2 w-2 rounded-full bg-[#84FF00]" />
-                  <span className="text-xs font-bold uppercase tracking-[0.25em] text-[#84FF00]">
-                    Elite Nutrition Protocol
-                  </span>
-                </div>
+        <section className="relative overflow-hidden">
+  <div className="absolute inset-0">
+    <img
+      src={heroImage}
+      alt={plan.name}
+      className="h-full w-full object-cover"
+    />
 
-                <h1 className="mx-auto max-w-5xl text-4xl font-black uppercase tracking-tight text-white md:text-6xl xl:text-7xl">
-                  {plan.name}
-                </h1>
+    <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/90 to-[#050505]/60" />
+    <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-[#050505]/30" />
+  </div>
 
-                <p className="mx-auto mt-6 max-w-4xl text-base leading-8 text-white/70 md:text-lg">
-                  {plan.description}
-                </p>
+  <div className="relative container mx-auto px-5 pt-32 pb-24">
+    <div className="max-w-4xl">
 
-                <div className="mt-10 flex flex-wrap justify-center gap-4">
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-4 backdrop-blur-xl">
-                    <div className="text-3xl font-black text-[#84FF00]">
-                      {plan.durationWeeks}
-                    </div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-white/55">
-                      Weeks
-                    </div>
-                  </div>
+      <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-[#84FF00]/30 bg-[#84FF00]/10 px-6 py-3 backdrop-blur-xl">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#84FF00] animate-pulse" />
+        <span className="text-xs font-bold uppercase tracking-[0.35em] text-[#84FF00]">
+          Premium Nutrition Program
+        </span>
+      </div>
 
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-4 backdrop-blur-xl">
-                    <div className="text-3xl font-black text-[#84FF00]">
-                      {plan.trainingGoal}
-                    </div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-white/55">
-                      Goal
-                    </div>
-                  </div>
+      <h1 className="text-5xl font-black leading-none text-white md:text-7xl">
+        {plan.name}
+      </h1>
 
-                  <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-4 backdrop-blur-xl">
-                    <div className="text-3xl font-black text-[#84FF00]">
-                      {plan.fitnessLevel}
-                    </div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-white/55">
-                      Level
-                    </div>
-                  </div>
-                </div>
-              </div>
+      <p className="mt-8 max-w-3xl text-lg leading-8 text-white/70">
+        {plan.description}
+      </p>
 
-              <PlanDetails plan={plan} heroImage={heroImage} />
-            </div>
+      <div className="mt-10 flex flex-wrap gap-4">
+
+        <div className="rounded-3xl border border-white/10 bg-white/5 px-7 py-5 backdrop-blur-2xl">
+          <div className="text-4xl font-black text-[#84FF00]">
+            {plan.durationOnWeeks}
           </div>
-        </section>
+
+          <div className="mt-1 text-xs uppercase tracking-[0.25em] text-white/50">
+            Weeks
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-white/5 px-7 py-5 backdrop-blur-2xl">
+          <div className="text-2xl font-black text-[#84FF00]">
+            {plan.trainingGoal}
+          </div>
+
+          <div className="mt-1 text-xs uppercase tracking-[0.25em] text-white/50">
+            Goal
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-white/10 bg-white/5 px-7 py-5 backdrop-blur-2xl">
+          <div className="text-2xl font-black text-[#84FF00]">
+            {plan.fitnessLevel}
+          </div>
+
+          <div className="mt-1 text-xs uppercase tracking-[0.25em] text-white/50">
+            Level
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div className="absolute left-0 bottom-0 h-px w-full bg-gradient-to-r from-transparent via-[#84FF00]/40 to-transparent" />
+</section>
+
+<section className="relative -mt-20 pb-20">
+  <div className="container mx-auto px-5">
+    <PlanDetails plan={plan} heroImage={heroImage} />
+  </div>
+</section>
       </main>
     </div>
   );

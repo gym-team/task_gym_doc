@@ -161,10 +161,7 @@ export function Navigation() {
 
   const coachLinks: NavItem[] = [
     { href: "/coach", label: "Coach Dashboard", icon: LayoutDashboard },
-    { href: "/coach/queue", label: "Review Queue", icon: ClipboardList },
-    { href: "/coach/plans", label: "Plan Builder", icon: ChefHat },
-    { href: "/coach/foods", label: "Food Library", icon: Apple },
-    { href: "/coach/constraints", label: "Constraints", icon: Settings2 },
+   
       { href: "/coach/profile", label: "Profile", icon: CircleUser },
   ]
 

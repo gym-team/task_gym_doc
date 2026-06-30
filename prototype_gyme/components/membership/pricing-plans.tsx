@@ -173,7 +173,7 @@ export function PricingPlans({ onMembershipUpdate }: Props = {}) {
                     </h3>
 
                     <div>
-                      <span className="price">${plan.price}</span>
+                      <span className="price">EGP{plan.price}</span>
                       <span className="period"> / {plan.title}</span>
                     </div>
                   </div>

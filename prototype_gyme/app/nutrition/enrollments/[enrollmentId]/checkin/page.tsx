@@ -23,6 +23,11 @@ function formatDate(iso: string): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+// Safely format a weight value that might be null/undefined from the API.
+function formatWeight(value: number | null | undefined): string {
+  return value !== null && value !== undefined ? value.toFixed(1) : "—";
+}
+
 function adjustmentLabel(kcal: number | null): string {
   if (kcal === null) return "Pending coach decision";
   if (kcal === 0) return "No change";
@@ -124,8 +129,8 @@ export default function CheckInPage() {
   function handleSubmitSuccess(result: CheckInSubmitResponse) {
     setIsModalOpen(false);
     setBanner(
-      `Week ${result.weekNumber} check-in submitted — average weight ${result.averageWeight.toFixed(
-        1
+      `Week ${result.weekNumber} check-in submitted — average weight ${formatWeight(
+        result.averageWeight
       )} kg. Your coach will review within 48 hours.`
     );
     loadData();
@@ -203,13 +208,13 @@ export default function CheckInPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="rounded-[20px] border border-white/10 bg-white/[0.03] p-5">
                 <span className="block text-2xl font-black tracking-tight text-[#84FF00]">
-                  {latestAvgWeight?.toFixed(1)}
+                  {formatWeight(latestAvgWeight)}
                 </span>
                 <span className="text-xs font-medium text-white/70">Latest Avg Weight (kg)</span>
               </div>
               <div className="rounded-[20px] border border-white/10 bg-white/[0.03] p-5">
                 <span className="block text-2xl font-black tracking-tight text-[#84FF00]">
-                  {avgAdherence}%
+                  {avgAdherence !== null ? `${avgAdherence}%` : "—"}
                 </span>
                 <span className="text-xs font-medium text-white/70">Average Adherence</span>
               </div>
@@ -298,7 +303,7 @@ export default function CheckInPage() {
                       Avg Weight
                     </span>
                     <span className="text-[15px] font-bold text-white">
-                      {item.averageWeight.toFixed(1)} kg
+                      {formatWeight(item.averageWeight)} kg
                     </span>
                   </div>
                   <div className="flex flex-col gap-1">
@@ -375,349 +380,3 @@ export default function CheckInPage() {
     </div>
   );
 }
-/* ------------------------------------------------------------------ */
-/*  Styles — FitZone Elite design system                              */
-/* ------------------------------------------------------------------ */
-
-const styles = `
-  .ck-page {
-    position: relative;
-    background: #050505;
-    min-height: 100vh;
-    overflow: hidden;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  .ck-bg-grid {
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
-    background-size: 44px 44px;
-    opacity: 0.05;
-    pointer-events: none;
-  }
-  .ck-glow {
-    position: absolute;
-    width: 480px;
-    height: 480px;
-    border-radius: 50%;
-    filter: blur(120px);
-    pointer-events: none;
-  }
-  .ck-glow-top {
-    top: -160px;
-    left: -120px;
-    background: rgba(132,255,0,0.20);
-  }
-  .ck-glow-bottom {
-    bottom: -200px;
-    right: -140px;
-    background: rgba(132,255,0,0.12);
-  }
-  .ck-container {
-    position: relative;
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 56px 24px 96px;
-    z-index: 1;
-  }
-  .ck-header {
-    margin-bottom: 40px;
-    animation: ck-fade-up 500ms ease-out both;
-  }
-  .ck-back {
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.5);
-    font-size: 13px;
-    cursor: pointer;
-    padding: 0;
-    margin-bottom: 24px;
-  }
-  .ck-back:hover {
-    color: #84FF00;
-  }
-  .ck-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 28px;
-  }
-  .ck-eyebrow {
-    color: #84FF00;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin: 0 0 8px;
-  }
-  .ck-title {
-    color: #fff;
-    font-size: 34px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: -0.5px;
-    margin: 0;
-    line-height: 1.1;
-  }
-  .ck-title-accent {
-    color: #84FF00;
-  }
-  .ck-submit-btn {
-    background: #fff;
-    color: #050505;
-    border: none;
-    border-radius: 12px;
-    padding: 0 22px;
-    height: 44px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background 200ms;
-  }
-  .ck-submit-btn:hover {
-    background: #84FF00;
-  }
-  .ck-stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-  .ck-stat-card {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-    padding: 18px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .ck-stat-card-value {
-    color: #84FF00;
-    font-size: 26px;
-    font-weight: 900;
-    letter-spacing: -0.5px;
-  }
-  .ck-stat-card-label {
-    color: rgba(255,255,255,0.70);
-    font-size: 12px;
-    font-weight: 500;
-  }
-  .ck-banner {
-    margin: 0 0 24px;
-    padding: 14px 18px;
-    border-radius: 14px;
-    font-size: 13.5px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    animation: ck-fade-up 400ms ease-out both;
-  }
-  .ck-banner-success {
-    background: rgba(132,255,0,0.10);
-    color: #84FF00;
-    border: 1px solid rgba(132,255,0,0.35);
-  }
-  .ck-banner-dismiss {
-    background: none;
-    border: none;
-    color: inherit;
-    font-size: 18px;
-    cursor: pointer;
-    line-height: 1;
-  }
-  .ck-state {
-    color: rgba(255,255,255,0.5);
-    font-size: 14px;
-    padding: 40px 0;
-    text-align: center;
-  }
-  .ck-state-error {
-    color: #FF6B00;
-  }
-  .ck-retry {
-    display: block;
-    margin: 14px auto 0;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.10);
-    color: #fff;
-    border-radius: 10px;
-    padding: 9px 18px;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .ck-empty {
-    text-align: center;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 24px;
-    padding: 56px 24px;
-  }
-  .ck-empty-title {
-    color: #fff;
-    font-size: 17px;
-    font-weight: 700;
-    margin: 0 0 8px;
-  }
-  .ck-empty-text {
-    color: rgba(255,255,255,0.55);
-    font-size: 13.5px;
-    margin: 0;
-  }
-  .ck-list {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-  }
-  .ck-card {
-    background: linear-gradient(to bottom, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 24px;
-    padding: 24px;
-    overflow: hidden;
-    transition: transform 300ms, box-shadow 300ms, border-color 300ms;
-    animation: ck-fade-up 500ms ease-out both;
-  }
-  .ck-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 40px rgba(132,255,0,0.25);
-    border-color: rgba(132,255,0,0.3);
-  }
-  .ck-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .ck-card-top-left {
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-  .ck-week-badge {
-    color: #fff;
-    font-weight: 800;
-    font-size: 16px;
-    text-transform: uppercase;
-    letter-spacing: -0.2px;
-  }
-  .ck-date {
-    color: rgba(255,255,255,0.5);
-    font-size: 13px;
-  }
-  .ck-review-badge {
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .ck-review-yes {
-    background: rgba(132,255,0,0.12);
-    color: #84FF00;
-    border: 1px solid rgba(132,255,0,0.35);
-  }
-  .ck-review-pending {
-    background: rgba(255,107,0,0.10);
-    color: #FF6B00;
-    border: 1px solid rgba(255,107,0,0.35);
-  }
-  .ck-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-    .ck-page {
-  padding-top: 80px;
-}
-  .ck-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .ck-stat-label {
-    font-size: 10.5px;
-    color: rgba(255,255,255,0.45);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .ck-stat-value {
-    font-size: 15px;
-    color: #fff;
-    font-weight: 700;
-  }
-  .ck-card-footer {
-    display: flex;
-  }
-  .ck-chip {
-    font-size: 12px;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 999px;
-  }
-  .ck-chip-cyan {
-    background: rgba(0,217,255,0.10);
-    color: #00D9FF;
-    border: 1px solid rgba(0,217,255,0.35);
-  }
-  .ck-chip-orange {
-    background: rgba(255,107,0,0.10);
-    color: #FF6B00;
-    border: 1px solid rgba(255,107,0,0.35);
-  }
-  .ck-chip-neutral {
-    background: rgba(255,255,255,0.05);
-    color: rgba(255,255,255,0.55);
-    border: 1px solid rgba(255,255,255,0.10);
-  }
-  .ck-coach-note {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.08);
-  }
-  .ck-coach-note-label {
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    color: #84FF00;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-  }
-  .ck-coach-note-text {
-    color: rgba(255,255,255,0.75);
-    font-size: 13.5px;
-    margin: 0;
-    line-height: 1.6;
-  }
-
-  @keyframes ck-fade-up {
-    from { opacity: 0; transform: translateY(40px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ck-header, .ck-banner, .ck-card { animation: none; }
-    .ck-card:hover { transform: none; }
-  }
-
-  @media (max-width: 640px) {
-    .ck-stats-row {
-      grid-template-columns: 1fr;
-    }
-    .ck-stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    .ck-title {
-      font-size: 26px;
-    }
-  }
-`;

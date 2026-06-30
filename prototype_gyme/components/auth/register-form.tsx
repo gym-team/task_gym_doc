@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, Eye, EyeOff, Dumbbell, Upload } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -16,7 +16,6 @@ export function RegisterForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,7 +23,6 @@ export function RegisterForm() {
     firstName: "",
     lastName: "",
     email: "",
-    confirmEmail: "",
     password: "",
     confirmPassword: "",
   });
@@ -49,18 +47,23 @@ export function RegisterForm() {
         newErrors[k] = Array.isArray(v) ? String(v[0]) : String(v);
       }
     } else if (apiData.message) {
-      newErrors["general"] = String(apiData.message);
+      const msg = String(apiData.message);
+      const lower = msg.toLowerCase();
+
+      // Identity-style errors (e.g. "Passwords must have at least one
+      // uppercase ('A'-'Z').") come back as a flat `message`, not under
+      // `errors`. Route them to the right field so they show up under
+      // the matching input instead of just a toast.
+      if (lower.includes("password")) {
+        newErrors["password"] = msg;
+      } else if (lower.includes("email")) {
+        newErrors["email"] = msg;
+      } else {
+        newErrors["general"] = msg;
+      }
     }
 
     return newErrors;
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setProfileImage(reader.result as string);
-    reader.readAsDataURL(file);
   };
 
   const validateForm = () => {
@@ -72,11 +75,6 @@ export function RegisterForm() {
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email is invalid";
-
-    if (!formData.confirmEmail)
-      newErrors.confirmEmail = "Please confirm your email";
-    else if (formData.email !== formData.confirmEmail)
-      newErrors.confirmEmail = "Emails do not match";
 
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
@@ -104,11 +102,6 @@ export function RegisterForm() {
       form.append("LastName", formData.lastName);
       form.append("Email", formData.email);
       form.append("Password", formData.password);
-
-      if (profileImage) {
-        const blob = await fetch(profileImage).then((r) => r.blob());
-        form.append("Photo", blob, "profile.jpg");
-      }
 
       const res = await fetch(`${API_URL}/api/Account/Register`, {
         method: "POST",
@@ -157,7 +150,7 @@ export function RegisterForm() {
     }
   };
 
-return (
+  return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div
         className={`max-w-sm sm:max-w-md lg:max-w-lg mx-auto transition-all duration-1000 ease-out ${
@@ -183,38 +176,6 @@ return (
           onSubmit={handleSubmit}
           className="bg-white/10 border border-white/10 rounded-2xl p-6 sm:p-8 shadow-[0_0_0.5px_0.5px_#84FF00] backdrop-blur-xl"
         >
-          {/* Profile Picture */}
-          <div className="mb-6">
-            <label className="block text-sm font-bold text-white mb-2">
-              Profile Picture (Optional)
-            </label>
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-white/5 border-2 border-white/10 overflow-hidden flex items-center justify-center">
-                {profileImage ? (
-                  <img
-                    src={profileImage}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="h-10 w-10 text-gray-400" />
-                )}
-              </div>
-              <label className="cursor-pointer">
-                <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:border-[#84FF00]/50 transition-colors">
-                  <Upload className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm text-gray-400">Upload Photo</span>
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-          </div>
-
           {/* First + Last on same row */}
           <div className="mb-6 flex flex-col sm:flex-row gap-4">
             <div className="w-full sm:w-1/2">
@@ -285,30 +246,6 @@ return (
             </div>
             {errors.email && (
               <p className="text-red-400 text-sm mt-2">{errors.email}</p>
-            )}
-          </div>
-
-          {/* Confirm Email */}
-          <div className="mb-6">
-            <label
-              htmlFor="confirmEmail"
-              className="block text-sm font-bold text-white mb-2"
-            >
-              Confirm Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                id="confirmEmail"
-                type="email"
-                value={formData.confirmEmail}
-                onChange={(e) => setField("confirmEmail", e.target.value)}
-                className={`w-full bg-white/5 border ${errors.confirmEmail ? "border-red-500" : "border-white/10"} rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-gray-500 focus:outline-none focus:border-[#84FF00] transition-colors`}
-                placeholder="Re-enter your email"
-              />
-            </div>
-            {errors.confirmEmail && (
-              <p className="text-red-400 text-sm mt-2">{errors.confirmEmail}</p>
             )}
           </div>
 

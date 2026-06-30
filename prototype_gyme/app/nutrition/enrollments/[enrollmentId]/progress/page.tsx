@@ -23,6 +23,11 @@ function weightDeltaLabel(delta: number): string {
   return `${sign}${delta.toFixed(1)} kg`;
 }
 
+// Safely format a weight value that might be null/undefined from the API.
+function formatWeight(value: number | null | undefined): string {
+  return value !== null && value !== undefined ? value.toFixed(1) : "—";
+}
+
 /* ------------------------------------------------------------------ */
 /*  Page                                                              */
 /* ------------------------------------------------------------------ */
@@ -80,8 +85,14 @@ export default function ProgressPage() {
     }
   }, [enrollmentId, loadData]);
 
-  const firstWeight = history.length > 0 ? history[0].averageWeight : null;
-  const latestWeight = history.length > 0 ? history[history.length - 1].averageWeight : null;
+  // Only consider weeks that actually have a recorded average weight —
+  // some weeks may come back from the API with a null averageWeight.
+  const weightsOnly = history
+    .map((h) => h.averageWeight)
+    .filter((w): w is number => w !== null && w !== undefined);
+
+  const firstWeight = weightsOnly.length > 0 ? weightsOnly[0] : null;
+  const latestWeight = weightsOnly.length > 0 ? weightsOnly[weightsOnly.length - 1] : null;
   const totalDelta = firstWeight !== null && latestWeight !== null ? latestWeight - firstWeight : null;
 
   const avgAdherence =
@@ -175,7 +186,7 @@ export default function ProgressPage() {
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="rounded-[20px] border border-white/10 bg-white/[0.03] p-5">
                 <span className="block text-2xl font-black tracking-tight text-[#84FF00]">
-                  {latestWeight?.toFixed(1)}
+                  {formatWeight(latestWeight)}
                   <span className="ml-1 text-sm font-semibold text-white/45">kg</span>
                 </span>
                 <span className="text-xs font-medium text-white/70">Current Avg Weight</span>
@@ -199,7 +210,7 @@ export default function ProgressPage() {
 
               <div className="rounded-[20px] border border-white/10 bg-white/[0.03] p-5">
                 <span className="block text-2xl font-black tracking-tight text-[#00D9FF]">
-                  {avgAdherence}%
+                  {avgAdherence !== null ? `${avgAdherence}%` : "—"}
                 </span>
                 <span className="text-xs font-medium text-white/70">Average Adherence</span>
               </div>
@@ -236,7 +247,7 @@ export default function ProgressPage() {
 
                     <div className="flex items-center gap-5 text-sm">
                       <span className="text-white/75">
-                        {item.averageWeight.toFixed(1)}{" "}
+                        {formatWeight(item.averageWeight)}{" "}
                         <span className="text-white/40">kg</span>
                       </span>
 
