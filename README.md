@@ -69,7 +69,7 @@ A built-in **AI chatbot** powered by **OpenAI API**, trained to provide:
 
 ## 📄 License
 
-This project is developed for academic and research purposes under the **ANU -Eng\Nehad && Dr\Aml**.
+This project is developed for academic and research purposes under the **-Eng\Nehad && Dr\Amal**.
 
 ---
 
